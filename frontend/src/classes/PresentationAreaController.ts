@@ -116,7 +116,7 @@ export default class PresentationAreaController extends (EventEmitter as new () 
   }
 }
 
-export function useConversationAreaOccupants(area: PresentationAreaController): PlayerController[] {
+export function usePresentationAreaOccupants(area: PresentationAreaController): PlayerController[] {
   const [occupants, setOccupants] = useState(area.occupants);
   useEffect(() => {
     area.addListener('occupantsChange', setOccupants);

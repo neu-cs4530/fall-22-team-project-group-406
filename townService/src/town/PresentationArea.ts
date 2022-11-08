@@ -1,5 +1,4 @@
 import { ITiledMapObject } from '@jonbell/tiled-map-type-guard';
-import Player from '../lib/Player';
 import {
   BoundingBox,
   PresentationArea as PresentationAreaModel,
@@ -33,22 +32,6 @@ export default class PresentationArea extends InteractableArea {
     super(id, coordinates, townEmitter);
     this.document = document;
     this.slide = slide;
-  }
-
-  /**
-   * Removes a player from this presentation area.
-   *
-   * Extends the base behavior of InteractableArea to set the presentation of this PresentationArea to undefined and
-   * emit an update to other players in the town when the last player leaves.
-   *
-   * @param player
-   */
-  public remove(player: Player) {
-    super.remove(player);
-    if (this._occupants.length === 0) {
-      this.document = undefined;
-      this._emitAreaChanged();
-    }
   }
 
   /**

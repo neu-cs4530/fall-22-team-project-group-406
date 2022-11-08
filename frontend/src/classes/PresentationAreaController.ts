@@ -6,8 +6,8 @@ import { PresentationArea as PresentationAreaModel } from '../types/CoveyTownSoc
 import PlayerController from './PlayerController';
 
 export type PresentationAreaEvents = {
-  changeDocument: (newDocument: string | undefined) => void;
-  changeSlide: (newSlide: number) => void;
+  documentChange: (newDocument: string | undefined) => void;
+  slideChange: (newSlide: number) => void;
   occupantsChange: (newOccupants: PlayerController[]) => void;
 };
 
@@ -54,11 +54,11 @@ export default class PresentationAreaController extends (EventEmitter as new () 
   }
 
   /**
-   * Sets the document for this presentation area. Changes the slide to 0 and emits a changeDocument event if the document changes.
+   * Sets the document for this presentation area. Changes the slide to 0 and emits a documentChange event if the document changes.
    */
   set document(newDocument: string | undefined) {
     if (this._document !== newDocument) {
-      this.emit('changeDocument', newDocument);
+      this.emit('documentChange', newDocument);
       this.slide = 0;
     }
     this._document = newDocument;
@@ -72,11 +72,11 @@ export default class PresentationAreaController extends (EventEmitter as new () 
   }
 
   /**
-   * Sets the slide for this presentation area. Emits a changeSlide event if the slide changes.
+   * Sets the slide for this presentation area. Emits a slideChange event if the slide changes.
    */
   set slide(newSlide: number) {
     if (this._slide !== newSlide) {
-      this.emit('changeSlide', newSlide);
+      this.emit('slideChange', newSlide);
     }
     this._slide = newSlide;
   }
@@ -130,9 +130,9 @@ export function usePresentationAreaOccupants(area: PresentationAreaController): 
 export function usePresentationAreaSlide(area: PresentationAreaController): number {
   const [slide, setSlide] = useState(area.slide);
   useEffect(() => {
-    area.addListener('changeSlide', setSlide);
+    area.addListener('slideChange', setSlide);
     return () => {
-      area.removeListener('changeSlide', setSlide);
+      area.removeListener('slideChange', setSlide);
     };
   }, [area]);
   return slide;
@@ -141,9 +141,9 @@ export function usePresentationAreaSlide(area: PresentationAreaController): numb
 export function usePresentationAreaDocument(area: PresentationAreaController): string | undefined {
   const [document, setDocument] = useState(area.document);
   useEffect(() => {
-    area.addListener('changeDocument', setDocument);
+    area.addListener('documentChange', setDocument);
     return () => {
-      area.removeListener('changeDocument', setDocument);
+      area.removeListener('documentChange', setDocument);
     };
   }, [area]);
   return document;

@@ -69,6 +69,13 @@ export interface ViewingArea {
   elapsedTimeSec: number;
 }
 
+export interface PresentationArea {
+  id: string;
+  occupantsByID: string[];
+  document?: string;
+  slide: number;
+}
+
 export interface ServerToClientEvents {
   playerMoved: (movedPlayer: Player) => void;
   playerDisconnect: (disconnectedPlayer: Player) => void;

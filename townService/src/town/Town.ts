@@ -14,10 +14,12 @@ import {
   ServerToClientEvents,
   SocketData,
   ViewingArea as ViewingAreaModel,
+  PresentationArea as PresentationAreaModel,
 } from '../types/CoveyTownSocket';
 import ConversationArea from './ConversationArea';
 import InteractableArea from './InteractableArea';
 import ViewingArea from './ViewingArea';
+import PresentationArea from './PresentationArea';
 
 /**
  * The Town class implements the logic for each town: managing the various events that
@@ -278,6 +280,37 @@ export default class Town {
       return false;
     }
     area.updateModel(viewingArea);
+    area.addPlayersWithinBounds(this._players);
+    this._broadcastEmitter.emit('interactableUpdate', area.toModel());
+    return true;
+  }
+
+  /**
+   * Creates a new presentation area in this town if there is not currently an active
+   * presentation area with the same ID. The presentation area ID must match the name of a
+   * presentation area that exists in this town's map, and the presentation area must not
+   * already have a document set.
+   *
+   * If successful creating the presentation area, this method:
+   *    Adds any players who are in the region defined by the presentation area to it
+   *    Notifies all players in the town that the presentation area has been updated by
+   *      emitting an interactableUpdate event
+   *
+   * @param presentationArea Information describing the presentation area to create.
+   *
+   * @returns True if the presentation area was created or false if there is no known
+   * presentation area with the specified ID or if there is already an active presentation area
+   * with the specified ID or if there is no document specified
+   */
+  public addPresentationArea(presentationArea: PresentationAreaModel): boolean {
+    const area = this._interactables.find(
+      eachArea => eachArea.id === presentationArea.id,
+    ) as PresentationArea;
+    if (!area || !presentationArea.document || area.document) {
+      return false;
+    }
+    area.document = presentationArea.document;
+    area.slide = presentationArea.slide;
     area.addPlayersWithinBounds(this._players);
     this._broadcastEmitter.emit('interactableUpdate', area.toModel());
     return true;

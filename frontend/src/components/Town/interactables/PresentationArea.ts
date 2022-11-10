@@ -50,7 +50,6 @@ export default class PresentationArea extends Interactable {
   }
 
   interact(): void {
-    console.log('interacting with presentation area');
     this._labelText?.setVisible(false);
     this._isInteracting = true;
   }

@@ -27,7 +27,7 @@ export default class PresentationArea extends Interactable {
       { color: '#FFFFFF', backgroundColor: '#000000' },
     );
     this._labelText.setVisible(false);
-    this.townController.getPresentationAreaController(this);
+    // this.townController.getPresentationAreaController(this);
     this.setDepth(-1);
   }
 

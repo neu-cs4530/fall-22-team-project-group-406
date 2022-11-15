@@ -4,7 +4,7 @@ import { BroadcastOperator } from 'socket.io';
 import IVideoClient from '../lib/IVideoClient';
 import Player from '../lib/Player';
 import TwilioVideo from '../lib/TwilioVideo';
-import { isViewingArea } from '../TestUtils';
+import { isPresentationArea, isViewingArea } from '../TestUtils';
 import {
   ChatMessage,
   ConversationArea as ConversationAreaModel,
@@ -155,6 +155,14 @@ export default class Town {
         );
         if (viewingArea) {
           (viewingArea as ViewingArea).updateModel(update);
+        } else if (isPresentationArea(update)) {
+          newPlayer.townEmitter.emit('interactableUpdate', update);
+          const presentationArea = this._interactables.find(
+            eachInteractable => eachInteractable.id === update.id,
+          );
+          if (presentationArea) {
+            (presentationArea as PresentationArea).slide = update.slide;
+          }
         }
       }
     });
@@ -385,7 +393,16 @@ export default class Town {
         ConversationArea.fromMapObject(eachConvAreaObj, this._broadcastEmitter),
       );
 
-    this._interactables = this._interactables.concat(viewingAreas).concat(conversationAreas);
+    const presentationAreas = objectLayer.objects
+      .filter(eachObject => eachObject.type === 'PresentationArea')
+      .map(eachPresentationAreaObject =>
+        PresentationArea.fromMapObject(eachPresentationAreaObject, this._broadcastEmitter),
+      );
+
+    this._interactables = this._interactables
+      .concat(viewingAreas)
+      .concat(conversationAreas)
+      .concat(presentationAreas);
     this._validateInteractables();
   }
 

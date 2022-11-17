@@ -2,7 +2,7 @@ import PresentationAreaController from '../../../classes/PresentationAreaControl
 import Interactable, { KnownInteractableTypes } from '../Interactable';
 
 export default class PresentationArea extends Interactable {
-  private _topicTextOrUndefined?: Phaser.GameObjects.Text;
+  private _titleTextOrUndefined?: Phaser.GameObjects.Text;
 
   private _infoTextBox?: Phaser.GameObjects.Text;
 
@@ -20,7 +20,7 @@ export default class PresentationArea extends Interactable {
   }
 
   private get _topicText() {
-    const ret = this._topicTextOrUndefined;
+    const ret = this._titleTextOrUndefined;
     if (!ret) {
       throw new Error('Expected topic text to be defined');
     }
@@ -39,7 +39,7 @@ export default class PresentationArea extends Interactable {
       this.name,
       { color: '#FFFFFF', backgroundColor: '#000000' },
     );
-    this._topicTextOrUndefined = this.scene.add.text(
+    this._titleTextOrUndefined = this.scene.add.text(
       this.x - this.displayWidth / 2,
       this.y + this.displayHeight / 2,
       '(No Topic)',

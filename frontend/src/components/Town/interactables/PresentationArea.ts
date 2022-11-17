@@ -19,10 +19,10 @@ export default class PresentationArea extends Interactable {
     return this._defaultDocument;
   }
 
-  private get _topicText() {
+  private get _titleText() {
     const ret = this._titleTextOrUndefined;
     if (!ret) {
-      throw new Error('Expected topic text to be defined');
+      throw new Error('Expected title text to be defined');
     }
     return ret;
   }
@@ -42,7 +42,7 @@ export default class PresentationArea extends Interactable {
     this._titleTextOrUndefined = this.scene.add.text(
       this.x - this.displayWidth / 2,
       this.y + this.displayHeight / 2,
-      '(No Topic)',
+      '(No Title)',
       { color: '#000000' },
     );
     this.setDepth(-1);

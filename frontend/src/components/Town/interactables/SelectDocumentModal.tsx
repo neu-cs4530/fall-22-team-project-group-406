@@ -18,7 +18,7 @@ import useTownController from '../../../hooks/useTownController';
 import { PresentationArea as PresentationAreaModel } from '../../../types/CoveyTownSocket';
 import PresentationArea from './PresentationArea';
 
-export default function SelectDocuentModal({
+export default function SelectDocumentModal({
   isOpen,
   close,
   presentationArea,

@@ -5,7 +5,7 @@ import PresentationAreaController from '../../../classes/PresentationAreaControl
 import { useInteractable, usePresentationAreaController } from '../../../classes/TownController';
 import useTownController from '../../../hooks/useTownController';
 import PresentationAreaInteractable from './PresentationArea';
-import SelectDocuentModal from './SelectDocumentModal';
+import SelectDocumentModal from './SelectDocumentModal';
 
 export class MockReactPdf extends Document {
   render(): React.ReactNode {
@@ -105,7 +105,7 @@ export function PresentationArea({
 
   if (!presentationAreaDocument) {
     return (
-      <SelectDocuentModal
+      <SelectDocumentModal
         isOpen={selectIsOpen}
         close={() => setSelectIsOpen(false)}
         presentationArea={presentationArea}

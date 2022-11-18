@@ -82,9 +82,9 @@ export function PresentationArea({
         setPresentationAreaDocument(document);
       }
     };
-    presentationAreaController.addListener('changeDocument', setDocument);
+    presentationAreaController.addListener('documentChange', setDocument);
     return () => {
-      presentationAreaController.removeListener('changeDocument', setDocument);
+      presentationAreaController.removeListener('documentChange', setDocument);
     };
   }, [presentationAreaController, townController]);
 

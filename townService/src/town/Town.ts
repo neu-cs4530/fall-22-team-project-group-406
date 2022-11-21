@@ -142,11 +142,15 @@ export default class Town {
     });
 
     // Set up a listener to process updates to interactables.
-    // Currently only knows how to process updates for ViewingArea's, and
-    // ignores any other updates for any other kind of interactable.
+    // Currently only knows how to process updates for ViewingArea's
+    // and PresentationArea's, and ignores any other updates for any
+    // other kind of interactable.
     // For ViewingArea's: dispatches an updateModel call to the viewingArea that
     // corresponds to the interactable being updated. Does not throw an error if
     // the specified viewing area does not exist.
+    // For PresentationArea's: dispatches an updateModel call to the
+    // presentationArea that corresponds to the interactable being updated. Does
+    // not throw an error if the specified presentation area does not exist.
     socket.on('interactableUpdate', (update: Interactable) => {
       if (isViewingArea(update)) {
         newPlayer.townEmitter.emit('interactableUpdate', update);
@@ -155,14 +159,14 @@ export default class Town {
         );
         if (viewingArea) {
           (viewingArea as ViewingArea).updateModel(update);
-        } else if (isPresentationArea(update)) {
-          newPlayer.townEmitter.emit('interactableUpdate', update);
-          const presentationArea = this._interactables.find(
-            eachInteractable => eachInteractable.id === update.id,
-          );
-          if (presentationArea) {
-            (presentationArea as PresentationArea).slide = update.slide;
-          }
+        }
+      } else if (isPresentationArea(update)) {
+        newPlayer.townEmitter.emit('interactableUpdate', update);
+        const presentationArea = this._interactables.find(
+          eachInteractable => eachInteractable.id === update.id,
+        );
+        if (presentationArea) {
+          (presentationArea as PresentationArea).slide = update.slide;
         }
       }
     });
@@ -317,8 +321,7 @@ export default class Town {
     if (!area || !presentationArea.document || area.document) {
       return false;
     }
-    area.document = presentationArea.document;
-    area.slide = presentationArea.slide;
+    area.updateModel(presentationArea);
     area.addPlayersWithinBounds(this._players);
     this._broadcastEmitter.emit('interactableUpdate', area.toModel());
     return true;

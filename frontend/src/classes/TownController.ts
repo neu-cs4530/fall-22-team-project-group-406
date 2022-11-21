@@ -579,8 +579,16 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
 
         this._conversationAreas = [];
         this._viewingAreas = [];
+        this._presentationAreas = [];
         initialData.interactables.forEach(eachInteractable => {
-          if (isConversationArea(eachInteractable)) {
+          if (isPresentationArea(eachInteractable)) {
+            this._presentationAreas.push(
+              PresentationAreaController.fromPresentationAreaModel(
+                eachInteractable,
+                this._playersByIDs.bind(this),
+              ),
+            );
+          } else if (isConversationArea(eachInteractable)) {
             this._conversationAreasInternal.push(
               ConversationAreaController.fromConversationAreaModel(
                 eachInteractable,

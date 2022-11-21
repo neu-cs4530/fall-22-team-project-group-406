@@ -1,6 +1,6 @@
 import { Container } from '@chakra-ui/react';
 import React, { useEffect, useRef, useState } from 'react';
-import { Document, Page } from 'react-pdf';
+import { Document, Page, pdfjs } from 'react-pdf';
 import PresentationAreaController from '../../../classes/PresentationAreaController';
 import { useInteractable, usePresentationAreaController } from '../../../classes/TownController';
 import useTownController from '../../../hooks/useTownController';
@@ -32,10 +32,12 @@ export class MockReactPdf extends Document {
  */
 export function PresentationAreaDocument({
   controller,
+  initialDocument,
 }: {
   controller: PresentationAreaController;
+  initialDocument: string;
 }): JSX.Element {
-  const [document, setDocument] = useState<string | undefined>(controller.document);
+  const [document, setDocument] = useState<string | undefined>(initialDocument);
   const [currentSlide, setCurrentSlide] = useState<number>(controller.slide);
   const townController = useTownController();
 
@@ -60,7 +62,12 @@ export function PresentationAreaDocument({
   return (
     <Container className='participant-wrapper'>
       Presentation Area: {controller.id}
-      <Document file={document} ref={reactPdfRef}>
+      <Document
+        file={document}
+        ref={reactPdfRef}
+        onLoadSuccess={(pdf: pdfjs.PDFDocumentProxy) => {
+          controller.numSlides = pdf.numPages;
+        }}>
         <Page
           pageIndex={currentSlide}
           ref={reactPdfPageRef}
@@ -109,11 +116,10 @@ export function PresentationArea({
 
   useEffect(() => {
     const setSlide = (event: KeyboardEvent) => {
-      if (event.key === 'ArrowRight') {
-        presentationAreaController.slide += 1;
-      }
-      if (event.key === 'ArrowLeft') {
+      if (event.key === '1') {
         presentationAreaController.slide -= 1;
+      } else if (event.key === '2') {
+        presentationAreaController.slide += 1;
       }
     };
     document.addEventListener('keydown', setSlide);
@@ -133,7 +139,10 @@ export function PresentationArea({
   }
   return (
     <>
-      <PresentationAreaDocument controller={presentationAreaController} />
+      <PresentationAreaDocument
+        controller={presentationAreaController}
+        initialDocument={presentationAreaDocument}
+      />
     </>
   );
 }

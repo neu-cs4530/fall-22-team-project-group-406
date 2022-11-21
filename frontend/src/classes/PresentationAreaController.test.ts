@@ -20,6 +20,7 @@ describe('DocumentAreaController', () => {
       new PlayerController(nanoid(), nanoid(), playerLocation),
       new PlayerController(nanoid(), nanoid(), playerLocation),
     ];
+    testArea.numSlides = 5;
     mockClear(mockListeners.slideChange);
     mockClear(mockListeners.occupantsChange);
     mockClear(mockListeners.documentChange);
@@ -72,6 +73,30 @@ describe('DocumentAreaController', () => {
       const newDocument = nanoid();
       testArea.document = newDocument;
       expect(testArea.document).toEqual(newDocument);
+      expect(mockListeners.slideChange).not.toBeCalled();
+      expect(testArea.toPresentationAreaModel()).toEqual({
+        id: testArea.id,
+        occupantsByID: testArea.occupants.map(eachOccupant => eachOccupant.id),
+        document: testArea.document,
+        slide: testArea.slide,
+      });
+    });
+    it('does not change the slide when set to a number greater than the number of slides', () => {
+      const newSlide = 6;
+      testArea.slide = newSlide;
+      expect(testArea.slide).toEqual(0);
+      expect(mockListeners.slideChange).not.toBeCalled();
+      expect(testArea.toPresentationAreaModel()).toEqual({
+        id: testArea.id,
+        occupantsByID: testArea.occupants.map(eachOccupant => eachOccupant.id),
+        document: testArea.document,
+        slide: testArea.slide,
+      });
+    });
+    it('does not change the slide when setting the property to a negative number', () => {
+      const newSlide = -1;
+      testArea.slide = newSlide;
+      expect(testArea.slide).toEqual(0);
       expect(mockListeners.slideChange).not.toBeCalled();
       expect(testArea.toPresentationAreaModel()).toEqual({
         id: testArea.id,

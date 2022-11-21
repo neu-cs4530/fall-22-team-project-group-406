@@ -18,5 +18,5 @@ export function isViewingArea(interactable: Interactable): interactable is Viewi
  * Test to see if an interactable is a presentation area
  */
 export function isPresentationArea(interactable: Interactable): interactable is PresentationArea {
-  return 'document' in interactable;
+  return 'slide' in interactable;
 }

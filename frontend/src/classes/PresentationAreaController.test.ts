@@ -20,10 +20,13 @@ describe('DocumentAreaController', () => {
       new PlayerController(nanoid(), nanoid(), playerLocation),
       new PlayerController(nanoid(), nanoid(), playerLocation),
     ];
+    testArea.numSlides = 5;
     mockClear(mockListeners.slideChange);
     mockClear(mockListeners.occupantsChange);
+    mockClear(mockListeners.documentChange);
     testArea.addListener('slideChange', mockListeners.slideChange);
     testArea.addListener('occupantsChange', mockListeners.occupantsChange);
+    testArea.addListener('documentChange', mockListeners.documentChange);
   });
   describe('Setting the occupants property', () => {
     it('does not update the property if the new occupants are the same set as the old', () => {
@@ -66,6 +69,42 @@ describe('DocumentAreaController', () => {
         slide: testArea.slide,
       });
     });
+    it('does not emit the changeSlide event when the slide is already 0', () => {
+      const newDocument = nanoid();
+      testArea.document = newDocument;
+      expect(testArea.document).toEqual(newDocument);
+      expect(mockListeners.slideChange).not.toBeCalled();
+      expect(testArea.toPresentationAreaModel()).toEqual({
+        id: testArea.id,
+        occupantsByID: testArea.occupants.map(eachOccupant => eachOccupant.id),
+        document: testArea.document,
+        slide: testArea.slide,
+      });
+    });
+    it('does not change the slide when set to a number greater than the number of slides', () => {
+      const newSlide = 6;
+      testArea.slide = newSlide;
+      expect(testArea.slide).toEqual(0);
+      expect(mockListeners.slideChange).not.toBeCalled();
+      expect(testArea.toPresentationAreaModel()).toEqual({
+        id: testArea.id,
+        occupantsByID: testArea.occupants.map(eachOccupant => eachOccupant.id),
+        document: testArea.document,
+        slide: testArea.slide,
+      });
+    });
+    it('does not change the slide when setting the property to a negative number', () => {
+      const newSlide = -1;
+      testArea.slide = newSlide;
+      expect(testArea.slide).toEqual(0);
+      expect(mockListeners.slideChange).not.toBeCalled();
+      expect(testArea.toPresentationAreaModel()).toEqual({
+        id: testArea.id,
+        occupantsByID: testArea.occupants.map(eachOccupant => eachOccupant.id),
+        document: testArea.document,
+        slide: testArea.slide,
+      });
+    });
   });
   describe('Setting the document property', () => {
     it('does not update the property if the new document is the same as the old', () => {
@@ -73,6 +112,12 @@ describe('DocumentAreaController', () => {
       testArea.document = origDocument;
       expect(testArea.document).toEqual(origDocument);
       expect(mockListeners.slideChange).not.toBeCalled();
+    });
+    it('updates the property and emits documentChange event if the property changes', () => {
+      const newDocument = nanoid();
+      testArea.document = newDocument;
+      expect(mockListeners.documentChange).toBeCalledWith(newDocument);
+      expect(testArea.document).toEqual(newDocument);
     });
     it('emits the changeSlide event when setting the property and updates the model', () => {
       const newSlide = testArea.slide + 1;
@@ -83,18 +128,6 @@ describe('DocumentAreaController', () => {
       testArea.document = newDocument;
       expect(testArea.document).toEqual(newDocument);
       expect(mockListeners.slideChange).toBeCalledWith(0);
-      expect(testArea.toPresentationAreaModel()).toEqual({
-        id: testArea.id,
-        occupantsByID: testArea.occupants.map(eachOccupant => eachOccupant.id),
-        document: testArea.document,
-        slide: testArea.slide,
-      });
-    });
-    it('does not emit the changeSlide event when the slide is already 0', () => {
-      const newDocument = nanoid();
-      testArea.document = newDocument;
-      expect(testArea.document).toEqual(newDocument);
-      expect(mockListeners.slideChange).not.toBeCalled();
       expect(testArea.toPresentationAreaModel()).toEqual({
         id: testArea.id,
         occupantsByID: testArea.occupants.map(eachOccupant => eachOccupant.id),

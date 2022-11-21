@@ -19,6 +19,7 @@ import {
   Direction,
   Interactable,
   PlayerLocation,
+  PresentationArea,
   ServerToClientEvents,
   SocketData,
   ViewingArea,
@@ -201,4 +202,8 @@ export function isViewingArea(interactable: Interactable): interactable is Viewi
 
 export function isConversationArea(interactable: Interactable): interactable is ConversationArea {
   return 'topic' in interactable;
+}
+
+export function isPresentationArea(interactable: Interactable): interactable is PresentationArea {
+  return 'document' in interactable;
 }

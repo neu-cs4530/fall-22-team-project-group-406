@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import TypedEmitter from 'typed-emitter';
 import Interactable from '../components/Town/Interactable';
+import PresentationArea from '../components/Town/interactables/PresentationArea';
 import ViewingArea from '../components/Town/interactables/ViewingArea';
 import { LoginController } from '../contexts/LoginControllerContext';
 import { TownsService, TownsServiceClient } from '../generated/client';
@@ -15,10 +16,12 @@ import {
   PlayerLocation,
   TownSettingsUpdate,
   ViewingArea as ViewingAreaModel,
+  PresentationArea as PresentationAreaModel,
 } from '../types/CoveyTownSocket';
-import { isConversationArea, isViewingArea } from '../types/TypeUtils';
+import { isConversationArea, isPresentationArea, isViewingArea } from '../types/TypeUtils';
 import ConversationAreaController from './ConversationAreaController';
 import PlayerController from './PlayerController';
+import PresentationAreaController from './PresentationAreaController';
 import ViewingAreaController from './ViewingAreaController';
 
 const CALCULATE_NEARBY_PLAYERS_DELAY = 300;
@@ -69,6 +72,11 @@ export type TownEvents = {
    * the town controller's record of viewing areas.
    */
   viewingAreasChanged: (newViewingAreas: ViewingAreaController[]) => void;
+  /**
+   * An event that indicates that the set of presentation areas has changed. This event is emitted after updating
+   * the town controller's record of presentation areas.
+   */
+  presentationAreasChanged: (newPresentationAreas: PresentationAreaController[]) => void;
   /**
    * An event that indicates that a new chat message has been received, which is the parameter passed to the listener
    */
@@ -190,6 +198,8 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
 
   private _viewingAreas: ViewingAreaController[] = [];
 
+  private _presentationAreas: PresentationAreaController[] = [];
+
   public constructor({ userName, townID, loginController }: ConnectionProperties) {
     super();
     this._townID = townID;
@@ -309,6 +319,15 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
     this.emit('viewingAreasChanged', newViewingAreas);
   }
 
+  public get presentationAreas() {
+    return this._presentationAreas;
+  }
+
+  public set presentationAreas(newPresentationAreas: PresentationAreaController[]) {
+    this._presentationAreas = newPresentationAreas;
+    this.emit('presentationAreasChanged', newPresentationAreas);
+  }
+
   /**
    * Begin interacting with an interactable object. Emits an event to all listeners.
    * @param interactedObj
@@ -408,7 +427,7 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
      * a conversationAreasChagned event to listeners of this TownController.
      *
      * If the update changes properties of the interactable, the interactable is also expected to emit its own
-     * events (@see ViewingAreaController and @see ConversationAreaController)
+     * events (@see ViewingAreaController and @see ConversationAreaController and @see PresentationAreaController)
      */
     this._socket.on('interactableUpdate', interactable => {
       if (isConversationArea(interactable)) {
@@ -421,6 +440,15 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
           if (emptyNow !== emptyAfterChange) {
             this.emit('conversationAreasChanged', this._conversationAreasInternal);
           }
+        }
+      } else if (isPresentationArea(interactable)) {
+        const updatedPresentationArea = this._presentationAreas.find(
+          eachArea => eachArea.id === interactable.id,
+        );
+        if (updatedPresentationArea) {
+          updatedPresentationArea.document = interactable.document;
+          updatedPresentationArea.occupants = this._playersByIDs(interactable.occupantsByID);
+          updatedPresentationArea.slide = interactable.slide;
         }
       } else if (isViewingArea(interactable)) {
         const updatedViewingArea = this._viewingAreas.find(
@@ -509,6 +537,17 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
   }
 
   /**
+   * Create a new presentation area, sending the request to the townService. Throws an error if the request
+   * is not successful. Does not immediately update local state about the new presentation area - it will be
+   * updated once the townService creates the area and emits an interactableUpdate
+   *
+   * @param newArea
+   */
+  async createPresentationArea(newArea: PresentationAreaModel) {
+    await this._townsService.createPresentationArea(this.townID, this.sessionToken, newArea);
+  }
+
+  /**
    * Disconnect from the town, notifying the townService that we are leaving and returning
    * to the login page
    */
@@ -540,8 +579,16 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
 
         this._conversationAreas = [];
         this._viewingAreas = [];
+        this._presentationAreas = [];
         initialData.interactables.forEach(eachInteractable => {
-          if (isConversationArea(eachInteractable)) {
+          if (isPresentationArea(eachInteractable)) {
+            this._presentationAreas.push(
+              PresentationAreaController.fromPresentationAreaModel(
+                eachInteractable,
+                this._playersByIDs.bind(this),
+              ),
+            );
+          } else if (isConversationArea(eachInteractable)) {
             this._conversationAreasInternal.push(
               ConversationAreaController.fromConversationAreaModel(
                 eachInteractable,
@@ -587,6 +634,24 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
     }
   }
 
+  public getPresentationAreaController(
+    presentationArea: PresentationArea,
+  ): PresentationAreaController {
+    const existingController = this._presentationAreas.find(
+      eachExistingArea => eachExistingArea.id === presentationArea.name,
+    );
+    if (existingController) {
+      return existingController;
+    } else {
+      const newController = new PresentationAreaController(
+        presentationArea.name,
+        presentationArea.defaultDocument,
+      );
+      this._presentationAreas.push(newController);
+      return newController;
+    }
+  }
+
   /**
    * Emit a viewing area update to the townService
    * @param viewingArea The Viewing Area Controller that is updated and should be emitted
@@ -594,6 +659,15 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
    */
   public emitViewingAreaUpdate(viewingArea: ViewingAreaController) {
     this._socket.emit('interactableUpdate', viewingArea.viewingAreaModel());
+  }
+
+  /**
+   * Emit a presentation area update to the townService
+   * @param presentationArea The Presentation Area Controller that is updated and should be emitted
+   *   with the event
+   */
+  public emitPresentationAreaUpdate(presentationArea: PresentationAreaController) {
+    this._socket.emit('interactableUpdate', presentationArea.toPresentationAreaModel());
   }
 
   /**
@@ -673,6 +747,29 @@ export function useViewingAreaController(viewingAreaID: string): ViewingAreaCont
     throw new Error(`Requested viewing area ${viewingAreaID} does not exist`);
   }
   return viewingArea;
+}
+
+/**
+ * A react hook to retrieve a presentation area controller.
+ *
+ * This function will throw an error if the presentation area controller does not exist.
+ *
+ * This hook relies on the TownControllerContext.
+ *
+ * @param presentationAreaID The ID of the presentation area to retrieve the controller for
+ *
+ * @throws Error if there is no presentation area controller matching the specifeid ID
+ */
+export function usePresentationAreaController(presentationAreaID: string) {
+  const townController = useTownController();
+
+  const presentationArea = townController.presentationAreas.find(
+    eachArea => eachArea.id == presentationAreaID,
+  );
+  if (!presentationArea) {
+    throw new Error(`Requested presentation area ${presentationAreaID} does not exist`);
+  }
+  return presentationArea;
 }
 
 /**

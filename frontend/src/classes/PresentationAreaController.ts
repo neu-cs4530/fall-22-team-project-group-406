@@ -20,6 +20,8 @@ export default class PresentationAreaController extends (EventEmitter as new () 
 
   private _slide = 0;
 
+  private _numSlides = 0;
+
   constructor(id: string, document?: string) {
     super();
     this._id = id;
@@ -60,8 +62,8 @@ export default class PresentationAreaController extends (EventEmitter as new () 
     if (this._document !== newDocument) {
       this.emit('documentChange', newDocument);
       this.slide = 0;
+      this._document = newDocument;
     }
-    this._document = newDocument;
   }
 
   /**
@@ -72,13 +74,27 @@ export default class PresentationAreaController extends (EventEmitter as new () 
   }
 
   /**
+   * Sets the number of slides for this presentation area.
+   */
+  set numSlides(newNumSlides: number) {
+    this._numSlides = newNumSlides;
+  }
+
+  /**
+   * Returns the number of slides for this presentation area.
+   */
+  get numSlides(): number {
+    return this._numSlides;
+  }
+
+  /**
    * Sets the slide for this presentation area. Emits a slideChange event if the slide changes.
    */
   set slide(newSlide: number) {
-    if (this._slide !== newSlide) {
+    if (this._slide !== newSlide && newSlide >= 0 && newSlide < this._numSlides) {
       this.emit('slideChange', newSlide);
+      this._slide = newSlide;
     }
-    this._slide = newSlide;
   }
 
   /**

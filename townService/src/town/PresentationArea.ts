@@ -48,6 +48,16 @@ export default class PresentationArea extends InteractableArea {
   }
 
   /**
+   * Updates the state of this PresentationArea, setting the slide, and document properties
+   *
+   * @param presentationArea updated model
+   */
+  public updateModel({ slide, document }: PresentationAreaModel) {
+    this.slide = slide;
+    this.document = document;
+  }
+
+  /**
    * Creates a new PresentationArea object that will represent a Presentation Area object in the town map.
    * @param mapObject An ITiledMapObject that represents a rectangle in which this presentation area exists
    * @param broadcastEmitter An emitter that can be used by this presentation area to broadcast updates

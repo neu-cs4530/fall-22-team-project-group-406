@@ -425,7 +425,13 @@
                 {
                  "height":140,
                  "id":22,
-                 "name":"Presentation Table 6",
+                 "name":"Presentation Table 5",
+                 "properties": [
+                     {
+                      "name":"document",
+                      "type":"string",
+                      "value":"https://neu-se.github.io/CS4530-Fall-2022/Slides/Module%2004%20Interaction-Level%20Design%20Patterns.pdf"
+                     }],
                  "rotation":0,
                  "type":"PresentationArea",
                  "visible":true,
@@ -436,7 +442,13 @@
                 {
                  "height":141.999666666667,
                  "id":23,
-                 "name":"Presentation Table 7",
+                 "name":"Presentation Table 6",
+                 "properties": [
+                     {
+                      "name":"document",
+                      "type":"string",
+                      "value":"https://neu-se.github.io/CS4530-Fall-2022/Slides/Module%2004%20Interaction-Level%20Design%20Patterns.pdf"
+                     }],
                  "rotation":0,
                  "type":"PresentationArea",
                  "visible":true,
@@ -447,7 +459,13 @@
                 {
                  "height":139.333,
                  "id":24,
-                 "name":"Presentation Table 4",
+                 "name":"Presentation Table 3",
+                 "properties": [
+                     {
+                      "name":"document",
+                      "type":"string",
+                      "value":"https://neu-se.github.io/CS4530-Fall-2022/Slides/Module%2004%20Interaction-Level%20Design%20Patterns.pdf"
+                     }],
                  "rotation":0,
                  "type":"PresentationArea",
                  "visible":true,
@@ -458,7 +476,13 @@
                 {
                  "height":141.999666666667,
                  "id":25,
-                 "name":"Presentation Table 5",
+                 "name":"Presentation Table 4",
+                 "properties": [
+                     {
+                      "name":"document",
+                      "type":"string",
+                      "value":"https://neu-se.github.io/CS4530-Fall-2022/Slides/Module%2004%20Interaction-Level%20Design%20Patterns.pdf"
+                     }],
                  "rotation":0,
                  "type":"PresentationArea",
                  "visible":true,
@@ -469,7 +493,13 @@
                 {
                  "height":141.999666666667,
                  "id":26,
-                 "name":"Presentation Table 2",
+                 "name":"Presentation Table 1",
+                 "properties": [
+                     {
+                      "name":"document",
+                      "type":"string",
+                      "value":"https://neu-se.github.io/CS4530-Fall-2022/Slides/Module%2004%20Interaction-Level%20Design%20Patterns.pdf"
+                     }],
                  "rotation":0,
                  "type":"PresentationArea",
                  "visible":true,
@@ -480,25 +510,20 @@
                 {
                  "height":141.333,
                  "id":27,
-                 "name":"Presentation Table 3",
+                 "name":"Presentation Table 2",
+                 "properties": [
+                     {
+                      "name":"document",
+                      "type":"string",
+                      "value":"https://neu-se.github.io/CS4530-Fall-2022/Slides/Module%2004%20Interaction-Level%20Design%20Patterns.pdf"
+                     }],
                  "rotation":0,
                  "type":"PresentationArea",
                  "visible":true,
                  "width":188.722382430673,
                  "x":610.277784235994,
                  "y":1105.3335
-                }, 
-                {
-                 "height":142.666333333333,
-                 "id":28,
-                 "name":"Presentation Table 1",
-                 "rotation":0,
-                 "type":"PresentationArea",
-                 "visible":true,
-                 "width":127.333666666667,
-                 "x":226.333166666667,
-                 "y":1104.66683333333
-                }, 
+                },
                 {
                  "height":125.333,
                  "id":29,
@@ -515,7 +540,7 @@
                  "id":30,
                  "name":"Basement Dining Table 1",
                  "rotation":0,
-                 "type":"ConversationArea",
+                 "type": "ConversationArea",
                  "visible":true,
                  "width":164.667,
                  "x":3260.99983333333,

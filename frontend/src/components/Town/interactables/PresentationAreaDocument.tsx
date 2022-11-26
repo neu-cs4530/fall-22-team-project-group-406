@@ -1,4 +1,3 @@
-import { Container, flexbox } from '@chakra-ui/react';
 import { makeStyles } from '@material-ui/core/styles';
 import React, { useEffect, useRef, useState } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
@@ -10,13 +9,13 @@ import SelectDocumentModal from './SelectDocumentModal';
 
 const useStyles = makeStyles({
   // style rule
-  documentWrapper: props => ({
+  documentWrapper: () => ({
     alignItems: 'center',
     display: 'flex',
     justifyContent: 'center',
   }),
 
-  presentationBackground: props => ({
+  presentationBackground: () => ({
     backgroundColor: 'rgba(0,0,0,.3)',
     height: '100%',
     left: '0',
@@ -25,11 +24,11 @@ const useStyles = makeStyles({
     width: '100%',
   }),
 
-  pdfDocument: props => ({
+  pdfDocument: () => ({
     height: 'fit-content',
   }),
 
-  pdfPage: props => ({
+  pdfPage: () => ({
     '& div': {
       display: 'none',
     },

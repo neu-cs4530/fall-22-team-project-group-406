@@ -12,6 +12,8 @@ export default class PresentationArea extends InteractableArea {
 
   public slide: number;
 
+  public numSlides: number;
+
   /** The presentation area is "active" when there are players inside of it  */
   public get isActive(): boolean {
     return this._occupants.length > 0;
@@ -25,13 +27,14 @@ export default class PresentationArea extends InteractableArea {
    * @param townEmitter a broadcast emitter that can be used to emit updates to players
    */
   public constructor(
-    { document, id, slide }: PresentationAreaModel,
+    { document, id, slide, numSlides }: PresentationAreaModel,
     coordinates: BoundingBox,
     townEmitter: TownEmitter,
   ) {
     super(id, coordinates, townEmitter);
     this.document = document;
     this.slide = slide;
+    this.numSlides = numSlides;
   }
 
   /**
@@ -44,6 +47,7 @@ export default class PresentationArea extends InteractableArea {
       occupantsByID: this.occupantsByID,
       document: this.document,
       slide: this.slide,
+      numSlides: this.numSlides,
     };
   }
 
@@ -52,9 +56,10 @@ export default class PresentationArea extends InteractableArea {
    *
    * @param presentationArea updated model
    */
-  public updateModel({ slide, document }: PresentationAreaModel) {
+  public updateModel({ slide, document, numSlides }: PresentationAreaModel) {
     this.slide = slide;
     this.document = document;
+    this.numSlides = numSlides;
   }
 
   /**
@@ -73,7 +78,13 @@ export default class PresentationArea extends InteractableArea {
     }
     const rect: BoundingBox = { x: mapObject.x, y: mapObject.y, width, height };
     return new PresentationArea(
-      { id: name, occupantsByID: [], document: undefined, slide: 0 },
+      {
+        id: name,
+        occupantsByID: [],
+        document: undefined,
+        slide: 0,
+        numSlides: 0,
+      },
       rect,
       broadcastEmitter,
     );

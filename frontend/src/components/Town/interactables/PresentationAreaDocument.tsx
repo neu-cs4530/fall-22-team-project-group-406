@@ -72,7 +72,9 @@ export function PresentationAreaDocument({
           pageIndex={currentSlide}
           ref={reactPdfPageRef}
           onRenderSuccess={() => {
-            townController.emitPresentationAreaUpdate(controller);
+            if (controller.presenter?.id === townController.ourPlayer.id) {
+              townController.emitPresentationAreaUpdate(controller);
+            }
           }}
         />
       </Document>
@@ -116,6 +118,10 @@ export function PresentationArea({
 
   useEffect(() => {
     const setSlide = (event: KeyboardEvent) => {
+      // guard clause to prevent changing slides from users besides the presenter
+      if (presentationAreaController.presenter?.id !== townController.ourPlayer.id) {
+        return;
+      }
       if (event.key === '1') {
         presentationAreaController.slide -= 1;
       } else if (event.key === '2') {
@@ -126,7 +132,7 @@ export function PresentationArea({
     return () => {
       document.removeEventListener('keydown', setSlide);
     };
-  }, [presentationAreaController]);
+  }, [presentationAreaController, townController.ourPlayer.id]);
 
   if (!presentationAreaDocument) {
     return (

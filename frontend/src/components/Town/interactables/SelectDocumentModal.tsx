@@ -56,6 +56,7 @@ export default function SelectDocumentModal({
         id: presentationAreaController.id,
         document,
         slide: 0,
+        numSlides: 0,
         occupantsByID: [],
       };
       try {
@@ -64,6 +65,8 @@ export default function SelectDocumentModal({
           title: 'Document set!',
           status: 'success',
         });
+        // Set the presenter to the current player
+        presentationAreaController.presenter = coveyTownController.ourPlayer;
         coveyTownController.unPause();
       } catch (err) {
         if (err instanceof Error) {

@@ -7,10 +7,14 @@ import {
 import InteractableArea from './InteractableArea';
 
 export default class PresentationArea extends InteractableArea {
-  /* The topic of the presentation area, or undefined if it is not set */
+  /* The document url of the presentation area, or undefined if it is not set */
   public document?: string;
 
+  /* The slide number of the document */
   public slide: number;
+
+  /* The title of the presentation area, or undefined if it is not set */
+  public title?: string;
 
   /** The presentation area is "active" when there are players inside of it  */
   public get isActive(): boolean {
@@ -25,13 +29,14 @@ export default class PresentationArea extends InteractableArea {
    * @param townEmitter a broadcast emitter that can be used to emit updates to players
    */
   public constructor(
-    { document, id, slide }: PresentationAreaModel,
+    { document, id, slide, title }: PresentationAreaModel,
     coordinates: BoundingBox,
     townEmitter: TownEmitter,
   ) {
     super(id, coordinates, townEmitter);
     this.document = document;
     this.slide = slide;
+    this.title = title;
   }
 
   /**
@@ -44,6 +49,7 @@ export default class PresentationArea extends InteractableArea {
       occupantsByID: this.occupantsByID,
       document: this.document,
       slide: this.slide,
+      title: this.title,
     };
   }
 
@@ -52,9 +58,10 @@ export default class PresentationArea extends InteractableArea {
    *
    * @param presentationArea updated model
    */
-  public updateModel({ slide, document }: PresentationAreaModel) {
+  public updateModel({ slide, document, title }: PresentationAreaModel) {
     this.slide = slide;
     this.document = document;
+    this.title = title;
   }
 
   /**
@@ -73,7 +80,7 @@ export default class PresentationArea extends InteractableArea {
     }
     const rect: BoundingBox = { x: mapObject.x, y: mapObject.y, width, height };
     return new PresentationArea(
-      { id: name, occupantsByID: [], document: undefined, slide: 0 },
+      { id: name, occupantsByID: [], document: undefined, slide: 0, title: undefined },
       rect,
       broadcastEmitter,
     );

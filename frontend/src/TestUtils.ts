@@ -3,6 +3,7 @@ import { mock, MockProxy } from 'jest-mock-extended';
 import { nanoid } from 'nanoid';
 import ConversationAreaController from './classes/ConversationAreaController';
 import PlayerController from './classes/PlayerController';
+import PresentationAreaController from './classes/PresentationAreaController';
 import TownController, { TownEvents } from './classes/TownController';
 import ViewingAreaController from './classes/ViewingAreaController';
 import { TownsService } from './generated/client';
@@ -85,6 +86,7 @@ type MockedTownControllerProperties = {
   players?: PlayerController[];
   conversationAreas?: ConversationAreaController[];
   viewingAreas?: ViewingAreaController[];
+  presentationAreas?: PresentationAreaController[];
 };
 export function mockTownController({
   friendlyName,
@@ -95,6 +97,7 @@ export function mockTownController({
   players,
   conversationAreas,
   viewingAreas,
+  presentationAreas,
 }: MockedTownControllerProperties) {
   const mockedController = mock<TownController>();
   if (friendlyName) {
@@ -122,6 +125,9 @@ export function mockTownController({
   }
   if (viewingAreas) {
     Object.defineProperty(mockedController, 'viewingAreas', { value: viewingAreas });
+  }
+  if (presentationAreas) {
+    Object.defineProperty(mockedController, 'presentationAreas', { value: presentationAreas });
   }
   return mockedController;
 }
@@ -182,6 +188,13 @@ export async function mockTownControllerConnection(
         video: nanoid(),
         elapsedTimeSec: 0,
         isPlaying: false,
+      });
+      responseToSendController.interactables.push({
+        id: nanoid(),
+        occupantsByID: [playerID],
+        document: nanoid(),
+        slide: 0,
+        title: nanoid(),
       });
     }
   }

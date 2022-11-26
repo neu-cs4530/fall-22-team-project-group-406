@@ -66,7 +66,7 @@ export default class PresentationAreaController extends (EventEmitter as new () 
   set document(newDocument: string | undefined) {
     if (this._document !== newDocument) {
       this.emit('documentChange', newDocument);
-      // this.slide = 0;
+      this.slide = 0;
       this._document = newDocument;
     }
   }

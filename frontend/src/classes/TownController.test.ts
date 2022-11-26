@@ -14,10 +14,11 @@ import {
   CoveyTownSocket,
   Player as PlayerModel,
   PlayerLocation,
+  PresentationArea as PresentationAreaModel,
   ServerToClientEvents,
   TownJoinResponse,
 } from '../types/CoveyTownSocket';
-import { isConversationArea, isViewingArea } from '../types/TypeUtils';
+import { isConversationArea, isViewingArea, isPresentationArea } from '../types/TypeUtils';
 import PlayerController from './PlayerController';
 import TownController, { TownEvents } from './TownController';
 import ViewingAreaController from './ViewingAreaController';
@@ -180,6 +181,25 @@ describe('TownController', () => {
         expect(changedAreasArray.find(eachConvArea => eachConvArea.id === newConvArea.id)?.topic);
       } else {
         fail('Did not find an existing, empty conversation area in the town join response');
+      }
+    });
+    it('Emits presentationAreasChanged when a presentation area is created', () => {
+      const newPresArea = townJoinResponse.interactables.find(eachInteractable =>
+        isPresentationArea(eachInteractable),
+      ) as PresentationAreaModel;
+      if (newPresArea) {
+        newPresArea.title = nanoid();
+        newPresArea.document = nanoid();
+        newPresArea.occupantsByID = [townJoinResponse.userID];
+        const event = emitEventAndExpectListenerFiring(
+          'interactableUpdate',
+          newPresArea,
+          'presentationAreasChanged',
+        );
+        const changedAreasArray = event.mock.calls[0][0];
+        expect(changedAreasArray.find(eachPresArea => eachPresArea.id === newPresArea.id)?.title);
+      } else {
+        fail('Did not find an existing, empty presentation area in the town join response');
       }
     });
     describe('[T2] interactableUpdate events', () => {

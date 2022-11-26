@@ -171,6 +171,13 @@ export async function mockTownControllerConnection(
       topic: undefined,
       occupantsByID: [],
     });
+    responseToSendController.interactables.push({
+      id: nanoid(),
+      occupantsByID: [],
+      document: undefined,
+      slide: 0,
+      title: undefined,
+    });
     for (let i = 0; i < 10; i++) {
       const playerID = nanoid();
       responseToSendController.currentPlayers.push({

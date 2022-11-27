@@ -72,6 +72,7 @@ export function PresentationAreaDocument({
           pageIndex={currentSlide}
           ref={reactPdfPageRef}
           onRenderSuccess={() => {
+            // Only presenter can emit changes for the document
             if (controller.presenter?.id === townController.ourPlayer.id) {
               townController.emitPresentationAreaUpdate(controller);
             }

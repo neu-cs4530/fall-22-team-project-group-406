@@ -116,7 +116,10 @@ export default class PresentationAreaController extends (EventEmitter as new () 
    * Sets the presenter for this presentation area.
    */
   set presenter(newPresenter: PlayerController | undefined) {
-    if (this._presenter === undefined && newPresenter !== undefined) {
+    if (
+      (this._presenter === undefined && newPresenter !== undefined) ||
+      (this._presenter !== undefined && newPresenter === undefined)
+    ) {
       this._presenter = newPresenter;
     }
   }

@@ -10,6 +10,7 @@ describe('PresentationArea', () => {
   let testArea: PresentationArea;
   const townEmitter = mock<TownEmitter>();
   const document = nanoid();
+  const numSlides = 5;
   const slide = 0;
   const id = nanoid();
   let newPlayer: Player;
@@ -17,7 +18,7 @@ describe('PresentationArea', () => {
   beforeEach(() => {
     mockClear(townEmitter);
     testArea = new PresentationArea(
-      { document, slide, id, occupantsByID: [] },
+      { document, slide, numSlides, id, occupantsByID: [] },
       testAreaBox,
       townEmitter,
     );
@@ -30,7 +31,13 @@ describe('PresentationArea', () => {
       expect(testArea.occupantsByID).toEqual([newPlayer.id]);
 
       const lastEmittedUpdate = getLastEmittedEvent(townEmitter, 'interactableUpdate');
-      expect(lastEmittedUpdate).toEqual({ document, slide, id, occupantsByID: [newPlayer.id] });
+      expect(lastEmittedUpdate).toEqual({
+        document,
+        slide,
+        id,
+        numSlides,
+        occupantsByID: [newPlayer.id],
+      });
     });
     it("Sets the player's presentation and emits an update for their location", () => {
       expect(newPlayer.location.interactableID).toEqual(id);

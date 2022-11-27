@@ -14,9 +14,9 @@ import {
   ChatMessage,
   CoveyTownSocket,
   PlayerLocation,
+  PresentationArea as PresentationAreaModel,
   TownSettingsUpdate,
   ViewingArea as ViewingAreaModel,
-  PresentationArea as PresentationAreaModel,
 } from '../types/CoveyTownSocket';
 import { isConversationArea, isPresentationArea, isViewingArea } from '../types/TypeUtils';
 import ConversationAreaController from './ConversationAreaController';
@@ -449,6 +449,7 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
           const emptyNow = updatedPresentationArea.isEmpty();
           updatedPresentationArea.document = interactable.document;
           updatedPresentationArea.occupants = this._playersByIDs(interactable.occupantsByID);
+          updatedPresentationArea.numSlides = interactable.numSlides;
           updatedPresentationArea.slide = interactable.slide;
           updatedPresentationArea.title = interactable.title;
           const emptyAfterChange = updatedPresentationArea.isEmpty();

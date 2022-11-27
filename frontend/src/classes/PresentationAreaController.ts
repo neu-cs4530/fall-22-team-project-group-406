@@ -8,6 +8,7 @@ import PlayerController from './PlayerController';
 export type PresentationAreaEvents = {
   documentChange: (newDocument: string | undefined) => void;
   slideChange: (newSlide: number) => void;
+  numSlidesChange: (newNumSlides: number) => void;
   titleChange: (newTitle: string | undefined) => void;
   occupantsChange: (newOccupants: PlayerController[]) => void;
 };
@@ -21,16 +22,20 @@ export default class PresentationAreaController extends (EventEmitter as new () 
 
   private _document: string | undefined;
 
-  private _slide = 0;
+  private _slide: number;
 
-  private _numSlides = 0;
+  private _numSlides: number;
 
   private _title?: string;
+  
+  private _presenter: PlayerController | undefined;
 
-  constructor(id: string, document?: string, title?: string) {
+  constructor(id: string, document?: string, slide = 0, numSlides = 0) {
     super();
     this._id = id;
     this._document = document;
+    this._slide = slide;
+    this._numSlides = numSlides;
     this._title = title;
   }
 
@@ -83,7 +88,10 @@ export default class PresentationAreaController extends (EventEmitter as new () 
    * Sets the number of slides for this presentation area.
    */
   set numSlides(newNumSlides: number) {
-    this._numSlides = newNumSlides;
+    if (this._numSlides !== newNumSlides) {
+      this._numSlides = newNumSlides;
+      this.emit('numSlidesChange', newNumSlides);
+    }
   }
 
   /**
@@ -110,6 +118,25 @@ export default class PresentationAreaController extends (EventEmitter as new () 
     return this._slide;
   }
 
+  /**
+   * Sets the presenter for this presentation area.
+   */
+  set presenter(newPresenter: PlayerController | undefined) {
+    if (
+      (this._presenter === undefined && newPresenter !== undefined) ||
+      (this._presenter !== undefined && newPresenter === undefined)
+    ) {
+      this._presenter = newPresenter;
+    }
+  }
+  
+  /**
+   * Returns the presenter for this presentation area.
+   */
+  get presenter(): PlayerController | undefined {
+    return this._presenter;
+  }
+  
   /**
    * The title of the presentation area. Changing the title will emit a titleChange event
    *
@@ -148,6 +175,7 @@ export default class PresentationAreaController extends (EventEmitter as new () 
       occupantsByID: this._occupants.map(o => o.id),
       document: this.document,
       slide: this.slide,
+      numSlides: this.numSlides,
       title: this.title,
     };
   }
@@ -161,7 +189,13 @@ export default class PresentationAreaController extends (EventEmitter as new () 
     model: PresentationAreaModel,
     playerFinder: (playerIDs: string[]) => PlayerController[],
   ): PresentationAreaController {
-    const area = new PresentationAreaController(model.id, model.document, model.title);
+    const area = new PresentationAreaController(
+      model.id,
+      model.document,
+      model.slide,
+      model.numSlides,
+      model.title,
+    );
     area.slide = model.slide;
     area.occupants = playerFinder(model.occupantsByID);
     return area;

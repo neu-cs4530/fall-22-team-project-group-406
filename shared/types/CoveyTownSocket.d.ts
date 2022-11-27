@@ -74,6 +74,7 @@ export interface PresentationArea {
   occupantsByID: string[];
   document?: string;
   slide: number;
+  numSlides: number;
   title?: string;
 }
 

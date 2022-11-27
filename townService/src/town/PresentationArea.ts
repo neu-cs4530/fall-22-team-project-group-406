@@ -13,6 +13,9 @@ export default class PresentationArea extends InteractableArea {
   /* The current slide number of the document */
   public slide: number;
 
+  /* The maximum number of slides of the document */
+  public numSlides: number;
+  
   /* The title of the presentation area, or undefined if it is not set */
   public title?: string;
 
@@ -29,13 +32,14 @@ export default class PresentationArea extends InteractableArea {
    * @param townEmitter a broadcast emitter that can be used to emit updates to players
    */
   public constructor(
-    { document, id, slide, title }: PresentationAreaModel,
+    { document, id, slide, numSlides, title }: PresentationAreaModel,
     coordinates: BoundingBox,
     townEmitter: TownEmitter,
   ) {
     super(id, coordinates, townEmitter);
     this.document = document;
     this.slide = slide;
+    this.numSlides = numSlides;
     this.title = title;
   }
 
@@ -49,6 +53,7 @@ export default class PresentationArea extends InteractableArea {
       occupantsByID: this.occupantsByID,
       document: this.document,
       slide: this.slide,
+      numSlides: this.numSlides,
       title: this.title,
     };
   }
@@ -61,6 +66,11 @@ export default class PresentationArea extends InteractableArea {
   public updateModel({ slide, document, title }: PresentationAreaModel) {
     this.slide = slide;
     this.document = document;
+    this.title = title;
+  public updateModel({ slide, document, numSlides }: PresentationAreaModel) {
+    this.slide = slide;
+    this.document = document;
+    this.numSlides = numSlides;
     this.title = title;
   }
 
@@ -80,7 +90,14 @@ export default class PresentationArea extends InteractableArea {
     }
     const rect: BoundingBox = { x: mapObject.x, y: mapObject.y, width, height };
     return new PresentationArea(
-      { id: name, occupantsByID: [], document: undefined, slide: 0, title: undefined },
+      {
+        id: name,
+        occupantsByID: [],
+        document: undefined,
+        slide: 0,
+        numSlides: 0,
+        title: undefined,
+      },
       rect,
       broadcastEmitter,
     );

@@ -17,6 +17,7 @@ import {
   PlayerLocation,
   TownEmitter,
   ViewingArea as ViewingAreaModel,
+  PresentationArea as PresentationAreaModel,
 } from '../types/CoveyTownSocket';
 import ConversationArea from './ConversationArea';
 import Town from './Town';
@@ -332,6 +333,66 @@ const testingMaps: TestMapDict = {
             width: 326,
             x: 600,
             y: 1200,
+          },
+        ],
+        opacity: 1,
+        type: 'objectgroup',
+        visible: true,
+        x: 0,
+        y: 0,
+      },
+    ],
+  },
+  oneConvOneViewingOnePres: {
+    tiledversion: '1.9.0',
+    tileheight: 32,
+    tilesets: [],
+    tilewidth: 32,
+    type: 'map',
+    layers: [
+      {
+        id: 4,
+        name: 'Objects',
+        objects: [
+          {
+            type: 'ConversationArea',
+            height: 237,
+            id: 39,
+            name: 'Name1',
+            rotation: 0,
+            visible: true,
+            width: 326,
+            x: 40,
+            y: 120,
+          },
+          {
+            type: 'PresentationArea',
+            height: 266,
+            id: 43,
+            name: 'Name2',
+            rotation: 0,
+            visible: true,
+            width: 467,
+            x: 612,
+            y: 120,
+          },
+          {
+            type: 'ViewingArea',
+            height: 237,
+            id: 54,
+            name: 'Name3',
+            properties: [
+              {
+                name: 'video',
+                type: 'string',
+                value: 'someURL',
+              },
+            ],
+            rotation: 0,
+            visible: true,
+            width: 326,
+            x: 155,
+            y: 566,
           },
         ],
         opacity: 1,
@@ -684,7 +745,108 @@ describe('Town', () => {
       });
     });
   });
+  describe('addPresentationArea', () => {
+    beforeEach(async () => {
+      town.initializeFromMap(testingMaps.oneConvOneViewingOnePres);
+    });
+    it('Should return false if no area exists with that ID', () => {
+      expect(
+        town.addPresentationArea({
+          id: nanoid(),
+          occupantsByID: [],
+          document: nanoid(),
+          slide: 0,
+          numSlides: 10,
+          title: nanoid(),
+        }),
+      ).toBe(false);
+    });
+    it('Should return false if the requested document is empty', () => {
+      expect(
+        town.addPresentationArea({
+          id: 'Name2',
+          occupantsByID: [],
+          document: '',
+          slide: 0,
+          numSlides: 10,
+          title: nanoid(),
+        }),
+      ).toBe(false);
+      expect(
+        town.addPresentationArea({
+          id: 'Name2',
+          occupantsByID: [],
+          document: undefined,
+          slide: 0,
+          numSlides: 10,
+          title: nanoid(),
+        }),
+      ).toBe(false);
+    });
+    it('Should return false if the area is already active', () => {
+      expect(
+        town.addPresentationArea({
+          id: 'Name2',
+          occupantsByID: [],
+          document: nanoid(),
+          slide: 0,
+          numSlides: 10,
+          title: nanoid(),
+        }),
+      ).toBe(true);
+      expect(
+        town.addPresentationArea({
+          id: 'Name2',
+          occupantsByID: [],
+          document: nanoid(),
+          slide: 0,
+          numSlides: 10,
+          title: nanoid(),
+        }),
+      ).toBe(false);
+    });
+    describe('When successful', () => {
+      const newModel: PresentationAreaModel = {
+        id: 'Name2',
+        occupantsByID: [],
+        document: 'Name2.pdf',
+        slide: 0,
+        numSlides: 10,
+        title: 'title',
+      };
+      beforeEach(() => {
+        playerTestData.moveTo(620, 130); // Inside of "Name2" area
+        expect(town.addPresentationArea(newModel)).toBe(true);
+      });
 
+      it('Should update the local model for that area', () => {
+        const presentationArea = town.getInteractable('Name2');
+        expect(presentationArea.toModel()).toEqual({
+          id: 'Name2',
+          occupantsByID: [player.id],
+          document: 'Name2.pdf',
+          slide: 0,
+          numSlides: 10,
+          title: 'title',
+        });
+      });
+      it('Should emit an interactableUpdate message', () => {
+        const lastEmittedUpdate = getLastEmittedEvent(townEmitter, 'interactableUpdate');
+        expect(lastEmittedUpdate).toEqual({
+          id: 'Name2',
+          occupantsByID: [player.id],
+          document: 'Name2.pdf',
+          slide: 0,
+          numSlides: 10,
+          title: 'title',
+        });
+      });
+      it('Should include any players in that area as occupants', () => {
+        const presentationArea = town.getInteractable('Name2');
+        expect(presentationArea.occupantsByID).toEqual([player.id]);
+      });
+    });
+  });
   describe('disconnectAllPlayers', () => {
     beforeEach(() => {
       town.disconnectAllPlayers();

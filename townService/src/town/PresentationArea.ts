@@ -15,7 +15,7 @@ export default class PresentationArea extends InteractableArea {
 
   /* The maximum number of slides of the document */
   public numSlides: number;
-  
+
   /* The title of the presentation area, or undefined if it is not set */
   public title?: string;
 

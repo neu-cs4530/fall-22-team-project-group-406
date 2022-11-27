@@ -1,4 +1,5 @@
 import { ITiledMapObject } from '@jonbell/tiled-map-type-guard';
+import Player from '../lib/Player';
 import {
   BoundingBox,
   PresentationArea as PresentationAreaModel,
@@ -14,6 +15,8 @@ export default class PresentationArea extends InteractableArea {
 
   public numSlides: number;
 
+  public presenterID?: string;
+
   /** The presentation area is "active" when there are players inside of it  */
   public get isActive(): boolean {
     return this._occupants.length > 0;
@@ -27,7 +30,7 @@ export default class PresentationArea extends InteractableArea {
    * @param townEmitter a broadcast emitter that can be used to emit updates to players
    */
   public constructor(
-    { document, id, slide, numSlides }: PresentationAreaModel,
+    { document, id, slide, numSlides, presenterID }: PresentationAreaModel,
     coordinates: BoundingBox,
     townEmitter: TownEmitter,
   ) {
@@ -35,6 +38,26 @@ export default class PresentationArea extends InteractableArea {
     this.document = document;
     this.slide = slide;
     this.numSlides = numSlides;
+    this.presenterID = presenterID;
+  }
+
+  /**
+   * Removes a player from this presentation area.
+   *
+   * Extends the base behavior of InteractableArea to set the document of this PresentationArea to undefined and
+   * emit an update to other players in the town when the last presenter leaves.
+   *
+   * @param player
+   */
+  public remove(player: Player) {
+    super.remove(player);
+    if (player.id === this.presenterID) {
+      this.document = undefined;
+      this.slide = 0;
+      this.numSlides = 0;
+      this.presenterID = undefined;
+      this._emitAreaChanged();
+    }
   }
 
   /**
@@ -56,10 +79,11 @@ export default class PresentationArea extends InteractableArea {
    *
    * @param presentationArea updated model
    */
-  public updateModel({ slide, document, numSlides }: PresentationAreaModel) {
+  public updateModel({ slide, document, numSlides, presenterID }: PresentationAreaModel) {
     this.slide = slide;
     this.document = document;
     this.numSlides = numSlides;
+    this.presenterID = presenterID;
   }
 
   /**
@@ -82,6 +106,7 @@ export default class PresentationArea extends InteractableArea {
         id: name,
         occupantsByID: [],
         document: undefined,
+        presenterID: undefined,
         slide: 0,
         numSlides: 0,
       },

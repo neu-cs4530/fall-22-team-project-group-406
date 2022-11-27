@@ -10,6 +10,7 @@ export type PresentationAreaEvents = {
   slideChange: (newSlide: number) => void;
   numSlidesChange: (newNumSlides: number) => void;
   occupantsChange: (newOccupants: PlayerController[]) => void;
+  presenterChange: (newPresenter: PlayerController | undefined) => void;
 };
 
 export default class PresentationAreaController extends (EventEmitter as new () => TypedEmitter<PresentationAreaEvents>) {
@@ -25,10 +26,17 @@ export default class PresentationAreaController extends (EventEmitter as new () 
 
   private _presenter: PlayerController | undefined;
 
-  constructor(id: string, document?: string, slide = 0, numSlides = 0) {
+  constructor(
+    id: string,
+    document?: string,
+    presenter?: PlayerController | undefined,
+    slide = 0,
+    numSlides = 0,
+  ) {
     super();
     this._id = id;
     this._document = document;
+    this._presenter = presenter;
     this._slide = slide;
     this._numSlides = numSlides;
   }
@@ -116,8 +124,13 @@ export default class PresentationAreaController extends (EventEmitter as new () 
    * Sets the presenter for this presentation area.
    */
   set presenter(newPresenter: PlayerController | undefined) {
-    if (this._presenter === undefined && newPresenter !== undefined) {
+    console.log('Setting presenter to', newPresenter?.id);
+    if (
+      (this._presenter === undefined && newPresenter !== undefined) ||
+      (this._presenter !== undefined && newPresenter === undefined)
+    ) {
       this._presenter = newPresenter;
+      this.emit('presenterChange', newPresenter);
     }
   }
 
@@ -150,14 +163,17 @@ export default class PresentationAreaController extends (EventEmitter as new () 
     model: PresentationAreaModel,
     playerFinder: (playerIDs: string[]) => PlayerController[],
   ): PresentationAreaController {
+    const occupants = playerFinder(model.occupantsByID);
+    const presenter = occupants.find(eachOccupant => eachOccupant.id === model.presenterID);
     const area = new PresentationAreaController(
       model.id,
       model.document,
+      presenter,
       model.slide,
       model.numSlides,
     );
     area.slide = model.slide;
-    area.occupants = playerFinder(model.occupantsByID);
+    area.occupants = occupants;
     return area;
   }
 }

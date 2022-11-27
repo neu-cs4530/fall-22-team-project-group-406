@@ -52,9 +52,11 @@ export default function SelectDocumentModal({
 
   const createPresentationArea = useCallback(async () => {
     if (document && presentationAreaController) {
+      console.log('document', document, coveyTownController.ourPlayer.id);
       const request: PresentationAreaModel = {
         id: presentationAreaController.id,
         document,
+        presenterID: coveyTownController.ourPlayer.id,
         slide: 0,
         numSlides: 0,
         occupantsByID: [],

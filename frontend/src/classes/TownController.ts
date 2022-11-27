@@ -446,8 +446,14 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
           eachArea => eachArea.id === interactable.id,
         );
         if (updatedPresentationArea) {
+          console.log('updating presentation area', interactable);
+          const occupants = this._playersByIDs(interactable.occupantsByID);
+          const presenter = occupants.find(
+            eachOccupant => eachOccupant.id === interactable.presenterID,
+          );
           updatedPresentationArea.document = interactable.document;
-          updatedPresentationArea.occupants = this._playersByIDs(interactable.occupantsByID);
+          updatedPresentationArea.occupants = occupants;
+          updatedPresentationArea.presenter = presenter;
           updatedPresentationArea.numSlides = interactable.numSlides;
           updatedPresentationArea.slide = interactable.slide;
         }
@@ -545,6 +551,7 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
    * @param newArea
    */
   async createPresentationArea(newArea: PresentationAreaModel) {
+    console.log('creating presentation area', newArea);
     await this._townsService.createPresentationArea(this.townID, this.sessionToken, newArea);
   }
 
@@ -647,6 +654,9 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
       const newController = new PresentationAreaController(
         presentationArea.name,
         presentationArea.defaultDocument,
+        undefined,
+        0,
+        0,
       );
       this._presentationAreas.push(newController);
       return newController;

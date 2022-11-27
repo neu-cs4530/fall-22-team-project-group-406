@@ -167,8 +167,10 @@ export default class Town {
         );
         if (presentationArea) {
           const presentationAreaModel = presentationArea as PresentationArea;
+          console.log('updating presentation area', presentationAreaModel);
           presentationAreaModel.numSlides = update.numSlides;
           presentationAreaModel.slide = update.slide;
+          presentationAreaModel.presenterID = update.presenterID;
         }
       }
     });

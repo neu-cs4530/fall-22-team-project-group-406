@@ -1,6 +1,7 @@
 import { Container } from '@chakra-ui/react';
 import React, { useEffect, useRef, useState } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
+import PlayerController from '../../../classes/PlayerController';
 import PresentationAreaController from '../../../classes/PresentationAreaController';
 import { useInteractable, usePresentationAreaController } from '../../../classes/TownController';
 import useTownController from '../../../hooks/useTownController';
@@ -66,6 +67,7 @@ export function PresentationAreaDocument({
         file={document}
         ref={reactPdfRef}
         onLoadSuccess={(pdf: pdfjs.PDFDocumentProxy) => {
+          console.log('pdf loaded', pdf);
           controller.numSlides = pdf.numPages;
         }}>
         <Page
@@ -97,11 +99,13 @@ export function PresentationArea({
   const townController = useTownController();
   const presentationAreaController = usePresentationAreaController(presentationArea.name);
   const [selectIsOpen, setSelectIsOpen] = useState(
-    presentationAreaController.document === undefined,
+    presentationAreaController.document === undefined ||
+      presentationAreaController.presenter === undefined,
   );
   const [presentationAreaDocument, setPresentationAreaDocument] = useState(
     presentationAreaController.document,
   );
+  const [currentPresenter, setCurrentPresenter] = useState(presentationAreaController.presenter);
   useEffect(() => {
     const setDocument = (document: string | undefined) => {
       if (!document) {
@@ -134,7 +138,17 @@ export function PresentationArea({
     };
   }, [presentationAreaController, townController.ourPlayer.id]);
 
-  if (!presentationAreaDocument) {
+  useEffect(() => {
+    const setPresenter = (newPresenter: PlayerController | undefined) => {
+      setCurrentPresenter(newPresenter);
+    };
+    presentationAreaController.addListener('presenterChange', setPresenter);
+    return () => {
+      presentationAreaController.removeListener('presenterChange', setPresenter);
+    };
+  }, [presentationAreaController, townController.ourPlayer.id]);
+
+  if (!presentationAreaDocument || currentPresenter === undefined) {
     return (
       <SelectDocumentModal
         isOpen={selectIsOpen}

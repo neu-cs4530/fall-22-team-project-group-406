@@ -72,6 +72,7 @@ export interface ViewingArea {
 export interface PresentationArea {
   id: string;
   occupantsByID: string[];
+  presenterID?: string;
   document?: string;
   slide: number;
   numSlides: number;

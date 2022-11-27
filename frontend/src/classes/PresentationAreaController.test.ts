@@ -227,6 +227,7 @@ describe('PresentationAreaController', () => {
         occupantsByID: testArea.occupants.map(eachOccupant => eachOccupant.id),
         document: testArea.document,
         slide: testArea.slide,
+        numSlides: testArea.numSlides,
         title: testArea.title,
       });
     });

@@ -1,4 +1,4 @@
-import { Container } from '@chakra-ui/react';
+import { makeStyles } from '@material-ui/core/styles';
 import React, { useEffect, useRef, useState } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import PresentationAreaController from '../../../classes/PresentationAreaController';
@@ -6,6 +6,30 @@ import { useInteractable, usePresentationAreaController } from '../../../classes
 import useTownController from '../../../hooks/useTownController';
 import PresentationAreaInteractable from './PresentationArea';
 import SelectDocumentModal from './SelectDocumentModal';
+
+const useStyles = makeStyles({
+  // style rule
+  documentWrapper: () => ({
+    alignItems: 'center',
+    display: 'flex',
+    justifyContent: 'center',
+  }),
+
+  presentationBackground: () => ({
+    backgroundColor: 'rgba(0,0,0,.3)',
+    height: '100%',
+    left: '0',
+    position: 'fixed',
+    top: '0',
+    width: '100%',
+  }),
+
+  pdfPage: () => ({
+    '& div': {
+      display: 'none',
+    },
+  }),
+});
 
 /**
  * Mock component for a react-pdf document
@@ -59,8 +83,10 @@ export function PresentationAreaDocument({
     };
   }, [controller]);
 
+  const classes = useStyles();
+
   return (
-    <Container className='participant-wrapper'>
+    <>
       Presentation Area: {controller.id}
       <Document
         file={document}
@@ -69,6 +95,7 @@ export function PresentationAreaDocument({
           controller.numSlides = pdf.numPages;
         }}>
         <Page
+          className={classes.pdfPage}
           pageIndex={currentSlide}
           ref={reactPdfPageRef}
           onRenderSuccess={() => {
@@ -79,7 +106,7 @@ export function PresentationAreaDocument({
           }}
         />
       </Document>
-    </Container>
+    </>
   );
 }
 
@@ -135,6 +162,8 @@ export function PresentationArea({
     };
   }, [presentationAreaController, townController.ourPlayer.id]);
 
+  const classes = useStyles();
+
   if (!presentationAreaDocument) {
     return (
       <SelectDocumentModal
@@ -146,10 +175,13 @@ export function PresentationArea({
   }
   return (
     <>
-      <PresentationAreaDocument
-        controller={presentationAreaController}
-        initialDocument={presentationAreaDocument}
-      />
+      <div className={classes.presentationBackground} />
+      <div className={classes.documentWrapper}>
+        <PresentationAreaDocument
+          controller={presentationAreaController}
+          initialDocument={presentationAreaDocument}
+        />
+      </div>
     </>
   );
 }

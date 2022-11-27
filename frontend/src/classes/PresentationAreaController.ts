@@ -9,9 +9,12 @@ export type PresentationAreaEvents = {
   documentChange: (newDocument: string | undefined) => void;
   slideChange: (newSlide: number) => void;
   numSlidesChange: (newNumSlides: number) => void;
+  titleChange: (newTitle: string | undefined) => void;
   occupantsChange: (newOccupants: PlayerController[]) => void;
 };
 
+// The special string that will be displayed when a presentaion area does not have a title set
+export const NO_TITLE_STRING = '(No title)';
 export default class PresentationAreaController extends (EventEmitter as new () => TypedEmitter<PresentationAreaEvents>) {
   private _occupants: PlayerController[] = [];
 
@@ -23,14 +26,17 @@ export default class PresentationAreaController extends (EventEmitter as new () 
 
   private _numSlides: number;
 
+  private _title?: string;
+
   private _presenter: PlayerController | undefined;
 
-  constructor(id: string, document?: string, slide = 0, numSlides = 0) {
+  constructor(id: string, document?: string, slide = 0, numSlides = 0, title?: string) {
     super();
     this._id = id;
     this._document = document;
     this._slide = slide;
     this._numSlides = numSlides;
+    this._title = title;
   }
 
   /**
@@ -96,7 +102,7 @@ export default class PresentationAreaController extends (EventEmitter as new () 
   }
 
   /**
-   * Sets the slide for this presentation area. Emits a slideChange event if the slide changes.
+   * Sets the current slide for this presentation area. Emits a slideChange event if the slide changes.
    */
   set slide(newSlide: number) {
     if (this._slide !== newSlide && newSlide >= 0 && newSlide < this._numSlides) {
@@ -132,6 +138,35 @@ export default class PresentationAreaController extends (EventEmitter as new () 
   }
 
   /**
+   * The title of the presentation area. Changing the title will emit a titleChange event
+   *
+   * Setting the title to the value `undefined` will indicate that the presentation area is not active
+   */
+  set title(newTitle: string | undefined) {
+    if (this._title !== newTitle) {
+      this.emit('titleChange', newTitle);
+      this._title = newTitle;
+    }
+  }
+
+  /**
+   * Returns the title of the presentation area.
+   */
+  get title(): string | undefined {
+    return this._title;
+  }
+
+  /**
+   * A presentation area is empty if there are no occupants in it, the title is undefined, or
+   * the document is undefined.
+   */
+  isEmpty(): boolean {
+    return (
+      this._title === undefined || this._occupants.length === 0 || this._document === undefined
+    );
+  }
+
+  /**
    * @returns a PresentationAreaModel for this presentation area.
    */
   toPresentationAreaModel(): PresentationAreaModel {
@@ -141,6 +176,7 @@ export default class PresentationAreaController extends (EventEmitter as new () 
       document: this.document,
       slide: this.slide,
       numSlides: this.numSlides,
+      title: this.title,
     };
   }
 
@@ -158,6 +194,7 @@ export default class PresentationAreaController extends (EventEmitter as new () 
       model.document,
       model.slide,
       model.numSlides,
+      model.title,
     );
     area.slide = model.slide;
     area.occupants = playerFinder(model.occupantsByID);
@@ -196,4 +233,21 @@ export function usePresentationAreaDocument(area: PresentationAreaController): s
     };
   }, [area]);
   return document;
+}
+
+/**
+ * A react hook to retrieve the title of a PresentationAreaController.
+ * If there is currently no title defined, it will return NO_TITLE_STRING.
+ *
+ * This hook will re-render any components that use it when the title changes.
+ */
+export function usePresentationAreaTitle(area: PresentationAreaController): string | undefined {
+  const [title, setTitle] = useState(area.title);
+  useEffect(() => {
+    area.addListener('titleChange', setTitle);
+    return () => {
+      area.removeListener('titleChange', setTitle);
+    };
+  }, [area]);
+  return title || NO_TITLE_STRING;
 }

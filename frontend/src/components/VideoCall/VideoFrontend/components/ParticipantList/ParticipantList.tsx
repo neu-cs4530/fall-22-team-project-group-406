@@ -125,7 +125,6 @@ export default function ParticipantList() {
         slot={0}
       />
       <ViewingAreaVideo />
-      <PresentationAreaDocument />
 
       {participants
         .filter((p) => nearbyPlayers.find((player) => player.id == p.participant.identity))
@@ -169,5 +168,6 @@ export default function ParticipantList() {
       // )}
     >
       <div className={classes.gridInnerContainer}>{participantsEl}</div>
+      <PresentationAreaDocument />
     </main>
 }

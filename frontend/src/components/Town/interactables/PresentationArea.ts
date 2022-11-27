@@ -1,5 +1,7 @@
 import PresentationAreaController from '../../../classes/PresentationAreaController';
 import Interactable, { KnownInteractableTypes } from '../Interactable';
+import TownController from '../../../classes/TownController';
+import TownGameScene from '../TownGameScene';
 
 export default class PresentationArea extends Interactable {
   private _titleTextOrUndefined?: Phaser.GameObjects.Text;
@@ -12,6 +14,16 @@ export default class PresentationArea extends Interactable {
 
   private _isInteracting = false;
 
+  private _townController: TownController;
+
+  constructor(scene: TownGameScene) {
+    super(scene);
+    this._townController = scene.coveyTownController;
+    this.setTintFill();
+    this.setAlpha(0.3);
+    this._townController.addListener('presentationAreasChanged', this._updatePresentationAreas);
+  }
+
   public get defaultDocument() {
     if (!this._defaultDocument) {
       return 'No Document Found';
@@ -19,7 +31,7 @@ export default class PresentationArea extends Interactable {
     return this._defaultDocument;
   }
 
-  private get _titleText() {
+  public get titleText() {
     const ret = this._titleTextOrUndefined;
     if (!ret) {
       throw new Error('Expected title text to be defined');
@@ -46,6 +58,34 @@ export default class PresentationArea extends Interactable {
       { color: '#000000' },
     );
     this.setDepth(-1);
+    this._updatePresentationAreas(this._townController.presentationAreas);
+  }
+
+  private _updatePresentationAreas(areas: PresentationAreaController[]) {
+    const area = areas.find(eachAreaInController => eachAreaInController.id === this.name);
+    if (area !== this._presentationArea) {
+      if (area === undefined) {
+        this._presentationArea = undefined;
+        this.titleText.text = '(No title)';
+      } else {
+        this._presentationArea = area;
+        if (this.isOverlapping) {
+          this._scene.moveOurPlayerTo({ interactableID: this.name });
+        }
+        const updateListener = (newTopic: string | undefined) => {
+          if (newTopic) {
+            if (this._infoTextBox && this._infoTextBox.visible) {
+              this._infoTextBox.setVisible(false);
+            }
+            this.titleText.text = newTopic;
+          } else {
+            this.titleText.text = '(No title)';
+          }
+        };
+        updateListener(area.title);
+        area.addListener('titleChange', updateListener);
+      }
+    }
   }
 
   private _showInfoBox() {

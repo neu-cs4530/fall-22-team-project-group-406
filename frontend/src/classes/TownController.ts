@@ -446,10 +446,16 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
           eachArea => eachArea.id === interactable.id,
         );
         if (updatedPresentationArea) {
+          const emptyNow = updatedPresentationArea.isEmpty();
           updatedPresentationArea.document = interactable.document;
           updatedPresentationArea.occupants = this._playersByIDs(interactable.occupantsByID);
           updatedPresentationArea.numSlides = interactable.numSlides;
           updatedPresentationArea.slide = interactable.slide;
+          updatedPresentationArea.title = interactable.title;
+          const emptyAfterChange = updatedPresentationArea.isEmpty();
+          if (emptyNow !== emptyAfterChange) {
+            this.emit('presentationAreasChanged', this._presentationAreas);
+          }
         }
       } else if (isViewingArea(interactable)) {
         const updatedViewingArea = this._viewingAreas.find(

@@ -7,12 +7,17 @@ import {
 import InteractableArea from './InteractableArea';
 
 export default class PresentationArea extends InteractableArea {
-  /* The topic of the presentation area, or undefined if it is not set */
+  /* The document url of the presentation area, or undefined if it is not set */
   public document?: string;
 
+  /* The current slide number of the document */
   public slide: number;
 
+  /* The maximum number of slides of the document */
   public numSlides: number;
+
+  /* The title of the presentation area, or undefined if it is not set */
+  public title?: string;
 
   /** The presentation area is "active" when there are players inside of it  */
   public get isActive(): boolean {
@@ -27,7 +32,7 @@ export default class PresentationArea extends InteractableArea {
    * @param townEmitter a broadcast emitter that can be used to emit updates to players
    */
   public constructor(
-    { document, id, slide, numSlides }: PresentationAreaModel,
+    { document, id, slide, numSlides, title }: PresentationAreaModel,
     coordinates: BoundingBox,
     townEmitter: TownEmitter,
   ) {
@@ -35,6 +40,7 @@ export default class PresentationArea extends InteractableArea {
     this.document = document;
     this.slide = slide;
     this.numSlides = numSlides;
+    this.title = title;
   }
 
   /**
@@ -48,6 +54,7 @@ export default class PresentationArea extends InteractableArea {
       document: this.document,
       slide: this.slide,
       numSlides: this.numSlides,
+      title: this.title,
     };
   }
 
@@ -56,10 +63,11 @@ export default class PresentationArea extends InteractableArea {
    *
    * @param presentationArea updated model
    */
-  public updateModel({ slide, document, numSlides }: PresentationAreaModel) {
+  public updateModel({ slide, document, numSlides, title }: PresentationAreaModel) {
     this.slide = slide;
     this.document = document;
     this.numSlides = numSlides;
+    this.title = title;
   }
 
   /**
@@ -84,6 +92,7 @@ export default class PresentationArea extends InteractableArea {
         document: undefined,
         slide: 0,
         numSlides: 0,
+        title: undefined,
       },
       rect,
       broadcastEmitter,

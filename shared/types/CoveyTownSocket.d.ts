@@ -17,7 +17,7 @@ export type TownJoinResponse = {
   interactables: Interactable[];
 }
 
-export type Interactable = ViewingArea | ConversationArea;
+export type Interactable = ViewingArea | ConversationArea | PresentationArea;
 
 export type TownSettingsUpdate = {
   friendlyName?: string;
@@ -75,6 +75,7 @@ export interface PresentationArea {
   document?: string;
   slide: number;
   numSlides: number;
+  title?: string;
 }
 
 export interface ServerToClientEvents {

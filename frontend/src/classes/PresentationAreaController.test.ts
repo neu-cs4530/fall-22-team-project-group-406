@@ -4,7 +4,7 @@ import { PlayerLocation } from '../types/CoveyTownSocket';
 import PresentationAreaController, { PresentationAreaEvents } from './PresentationAreaController';
 import PlayerController from './PlayerController';
 
-describe('DocumentAreaController', () => {
+describe('PresentationAreaController', () => {
   let testArea: PresentationAreaController;
   const mockListeners = mock<PresentationAreaEvents>();
   beforeEach(() => {
@@ -44,6 +44,7 @@ describe('DocumentAreaController', () => {
       expect(mockListeners.occupantsChange).toBeCalledWith(newOccupants);
       expect(testArea.toPresentationAreaModel()).toEqual({
         id: testArea.id,
+        numSlides: testArea.numSlides,
         occupantsByID: testArea.occupants.map(eachOccupant => eachOccupant.id),
         document: testArea.document,
         slide: testArea.slide,
@@ -64,6 +65,7 @@ describe('DocumentAreaController', () => {
       expect(mockListeners.slideChange).toBeCalledWith(newSlide);
       expect(testArea.toPresentationAreaModel()).toEqual({
         id: testArea.id,
+        numSlides: testArea.numSlides,
         occupantsByID: testArea.occupants.map(eachOccupant => eachOccupant.id),
         document: testArea.document,
         slide: testArea.slide,
@@ -76,6 +78,7 @@ describe('DocumentAreaController', () => {
       expect(mockListeners.slideChange).not.toBeCalled();
       expect(testArea.toPresentationAreaModel()).toEqual({
         id: testArea.id,
+        numSlides: testArea.numSlides,
         occupantsByID: testArea.occupants.map(eachOccupant => eachOccupant.id),
         document: testArea.document,
         slide: testArea.slide,
@@ -88,6 +91,7 @@ describe('DocumentAreaController', () => {
       expect(mockListeners.slideChange).not.toBeCalled();
       expect(testArea.toPresentationAreaModel()).toEqual({
         id: testArea.id,
+        numSlides: testArea.numSlides,
         occupantsByID: testArea.occupants.map(eachOccupant => eachOccupant.id),
         document: testArea.document,
         slide: testArea.slide,
@@ -100,6 +104,7 @@ describe('DocumentAreaController', () => {
       expect(mockListeners.slideChange).not.toBeCalled();
       expect(testArea.toPresentationAreaModel()).toEqual({
         id: testArea.id,
+        numSlides: testArea.numSlides,
         occupantsByID: testArea.occupants.map(eachOccupant => eachOccupant.id),
         document: testArea.document,
         slide: testArea.slide,
@@ -130,6 +135,7 @@ describe('DocumentAreaController', () => {
       expect(mockListeners.slideChange).toBeCalledWith(0);
       expect(testArea.toPresentationAreaModel()).toEqual({
         id: testArea.id,
+        numSlides: testArea.numSlides,
         occupantsByID: testArea.occupants.map(eachOccupant => eachOccupant.id),
         document: testArea.document,
         slide: testArea.slide,
@@ -145,6 +151,7 @@ describe('DocumentAreaController', () => {
       expect(mockListeners.slideChange).toBeCalledTimes(1);
       expect(testArea.toPresentationAreaModel()).toEqual({
         id: testArea.id,
+        numSlides: testArea.numSlides,
         occupantsByID: testArea.occupants.map(eachOccupant => eachOccupant.id),
         document: testArea.document,
         slide: testArea.slide,
@@ -155,6 +162,7 @@ describe('DocumentAreaController', () => {
     it('returns the correct model', () => {
       expect(testArea.toPresentationAreaModel()).toEqual({
         id: testArea.id,
+        numSlides: testArea.numSlides,
         occupantsByID: testArea.occupants.map(eachOccupant => eachOccupant.id),
         document: testArea.document,
         slide: testArea.slide,

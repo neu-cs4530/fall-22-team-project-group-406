@@ -166,7 +166,9 @@ export default class Town {
           eachInteractable => eachInteractable.id === update.id,
         );
         if (presentationArea) {
-          (presentationArea as PresentationArea).slide = update.slide;
+          const presentationAreaModel = presentationArea as PresentationArea;
+          presentationAreaModel.numSlides = update.numSlides;
+          presentationAreaModel.slide = update.slide;
         }
       }
     });

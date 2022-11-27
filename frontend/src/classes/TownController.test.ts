@@ -422,6 +422,278 @@ describe('TownController', () => {
           expect(listener).toBeCalledWith(viewingArea.video);
         });
       });
+      describe('Presentation Area updates', () => {
+        function emptyPresentationArea() {
+          return {
+            ...(townJoinResponse.interactables.find(
+              eachInteractable =>
+                isPresentationArea(eachInteractable) && eachInteractable.occupantsByID.length == 0,
+            ) as PresentationAreaModel),
+          };
+        }
+        function occupiedPresentationArea() {
+          return {
+            ...(townJoinResponse.interactables.find(
+              eachInteractable =>
+                isPresentationArea(eachInteractable) && eachInteractable.occupantsByID.length > 0,
+            ) as PresentationAreaModel),
+          };
+        }
+        it('Emits a presentationAreasChanged event with the updated list of presentation areas if the area is newly occupied', () => {
+          const presArea = emptyPresentationArea();
+          presArea.occupantsByID = [townJoinResponse.userID];
+          presArea.title = nanoid();
+          presArea.document = nanoid();
+          const updatedPresentationAreas = testController.presentationAreas;
+
+          emitEventAndExpectListenerFiring(
+            'interactableUpdate',
+            presArea,
+            'presentationAreasChanged',
+            updatedPresentationAreas,
+          );
+
+          const updatedController = updatedPresentationAreas.find(
+            eachArea => eachArea.id === presArea.id,
+          );
+          expect(updatedController?.title).toEqual(presArea.title);
+          expect(updatedController?.occupants.map(eachOccupant => eachOccupant.id)).toEqual(
+            presArea.occupantsByID,
+          );
+          expect(updatedController?.toPresentationAreaModel()).toEqual({
+            id: presArea.id,
+            title: presArea.title,
+            slide: presArea.slide,
+            document: presArea.document,
+            numSlides: presArea.numSlides,
+            occupantsByID: [townJoinResponse.userID],
+          });
+        });
+        it('Emits a presentationAreasChanged event with the updated list of presentation areas if the area is newly vacant', () => {
+          const presArea = occupiedPresentationArea();
+          presArea.occupantsByID = [];
+          presArea.title = undefined;
+          const updatedPresentationAreas = testController.presentationAreas;
+
+          emitEventAndExpectListenerFiring(
+            'interactableUpdate',
+            presArea,
+            'presentationAreasChanged',
+            updatedPresentationAreas,
+          );
+          const updatedController = updatedPresentationAreas.find(
+            eachArea => eachArea.id === presArea.id,
+          );
+          expect(updatedController?.title).toEqual(presArea.title);
+          expect(updatedController?.occupants.map(eachOccupant => eachOccupant.id)).toEqual(
+            presArea.occupantsByID,
+          );
+        });
+        it('Does not emit a presentationAreasChanged event if the set of active areas has not changed', () => {
+          const presArea = occupiedPresentationArea();
+          presArea.title = nanoid();
+          const updatedPresentationAreas = testController.presentationAreas;
+
+          const eventListener = getEventListener(mockSocket, 'interactableUpdate');
+          const mockListener = jest.fn() as jest.MockedFunction<
+            TownEvents['presentationAreasChanged']
+          >;
+          testController.addListener('presentationAreasChanged', mockListener);
+          eventListener(presArea);
+          expect(mockListener).not.toBeCalled();
+
+          const updatedController = updatedPresentationAreas.find(
+            eachArea => eachArea.id === presArea.id,
+          );
+          expect(updatedController?.title).toEqual(presArea.title);
+          expect(updatedController?.occupants.map(eachOccupant => eachOccupant.id)).toEqual(
+            presArea.occupantsByID,
+          );
+        });
+        it('Emits a titleChange event if the title of a presentation area changes', () => {
+          const presArea = occupiedPresentationArea();
+          presArea.title = nanoid();
+          //Set up a titleChange listener
+          const titleChangeListener = jest.fn();
+          const presAreaController = testController.presentationAreas.find(
+            eachArea => eachArea.id === presArea.id,
+          );
+          if (!presAreaController) {
+            fail('Could not find presentation area controller');
+            return;
+          }
+          presAreaController.addListener('titleChange', titleChangeListener);
+
+          // Perform the update
+          const eventListener = getEventListener(mockSocket, 'interactableUpdate');
+          eventListener(presArea);
+
+          expect(titleChangeListener).toBeCalledWith(presArea.title);
+        });
+        it('Emits a documentChange event if the document of a presentation area changes', () => {
+          const presArea = occupiedPresentationArea();
+          presArea.document = nanoid();
+          //Set up a documentChange listener
+          const documentChangeListener = jest.fn();
+          const presAreaController = testController.presentationAreas.find(
+            eachArea => eachArea.id === presArea.id,
+          );
+          if (!presAreaController) {
+            fail('Could not find presentation area controller');
+            return;
+          }
+          presAreaController.addListener('documentChange', documentChangeListener);
+
+          // Perform the update
+          const eventListener = getEventListener(mockSocket, 'interactableUpdate');
+          eventListener(presArea);
+
+          expect(documentChangeListener).toBeCalledWith(presArea.document);
+        });
+        it('Emits a numSlidesChange event if the numSlides of a presentation area changes', () => {
+          const presArea = occupiedPresentationArea();
+          presArea.numSlides = 5;
+          //Set up a numSlidesChange listener
+          const numSlidesChangeListener = jest.fn();
+          const presAreaController = testController.presentationAreas.find(
+            eachArea => eachArea.id === presArea.id,
+          );
+          if (!presAreaController) {
+            fail('Could not find presentation area controller');
+            return;
+          }
+          presAreaController.addListener('numSlidesChange', numSlidesChangeListener);
+
+          // Perform the update
+          const eventListener = getEventListener(mockSocket, 'interactableUpdate');
+          eventListener(presArea);
+
+          expect(numSlidesChangeListener).toBeCalledWith(presArea.numSlides);
+        });
+        it('Emits a slideChange event if the slide of a presentation area changes and is grater than numSlides', () => {
+          const presArea = occupiedPresentationArea();
+          presArea.numSlides = 5;
+          presArea.slide = 1;
+          //Set up a slideChange listener
+          const slideChangeListener = jest.fn();
+          const presAreaController = testController.presentationAreas.find(
+            eachArea => eachArea.id === presArea.id,
+          );
+          if (!presAreaController) {
+            fail('Could not find presentation area controller');
+            return;
+          }
+          presAreaController.addListener('slideChange', slideChangeListener);
+
+          // Perform the update
+          const eventListener = getEventListener(mockSocket, 'interactableUpdate');
+          eventListener(presArea);
+
+          expect(slideChangeListener).toBeCalledWith(presArea.slide);
+        });
+        it('Does not emit slideChange event if the slide of a presentation area changes and is less than or equal to numSlides', () => {
+          const presArea = occupiedPresentationArea();
+          presArea.numSlides = 1;
+          presArea.slide = 1;
+          //Set up a slideChange listener
+          const slideChangeListener = jest.fn();
+          const presAreaController = testController.presentationAreas.find(
+            eachArea => eachArea.id === presArea.id,
+          );
+          if (!presAreaController) {
+            fail('Could not find presentation area controller');
+            return;
+          }
+          presAreaController.addListener('slideChange', slideChangeListener);
+
+          // Perform the update
+          const eventListener = getEventListener(mockSocket, 'interactableUpdate');
+          eventListener(presArea);
+
+          expect(slideChangeListener).not.toBeCalled();
+        });
+        it('Does not emit slideChange event if the slide of a presentation area changes and is a negative number', () => {
+          const presArea = occupiedPresentationArea();
+          presArea.numSlides = 1;
+          presArea.slide = -5;
+          //Set up a slideChange listener
+          const slideChangeListener = jest.fn();
+          const presAreaController = testController.presentationAreas.find(
+            eachArea => eachArea.id === presArea.id,
+          );
+          if (!presAreaController) {
+            fail('Could not find presentation area controller');
+            return;
+          }
+          presAreaController.addListener('slideChange', slideChangeListener);
+
+          // Perform the update
+          const eventListener = getEventListener(mockSocket, 'interactableUpdate');
+          eventListener(presArea);
+
+          expect(slideChangeListener).not.toBeCalled();
+        });
+        it('Does not emit a titleChange, documentChange, or slideChange event if the title, document, or slide is unchanged', () => {
+          const presArea = occupiedPresentationArea();
+          //Set up a property change listener
+          const changeListener = jest.fn();
+          const presAreaController = testController.presentationAreas.find(
+            eachArea => eachArea.id === presArea.id,
+          );
+          if (!presAreaController) {
+            fail('Could not find conversation area controller');
+          }
+          presAreaController.addListener('titleChange', changeListener);
+          presAreaController.addListener('documentChange', changeListener);
+          presAreaController.addListener('slideChange', changeListener);
+
+          // Perform the update
+          const eventListener = getEventListener(mockSocket, 'interactableUpdate');
+          eventListener(presArea);
+
+          expect(changeListener).not.toBeCalled();
+        });
+        it('Emits an occupantsChange event if the occupants changed', () => {
+          const presArea = occupiedPresentationArea();
+          presArea.occupantsByID = [townJoinResponse.userID, townJoinResponse.currentPlayers[1].id];
+
+          //Set up an occupantsChange listener
+          const occupantsChangeListener = jest.fn();
+          const presAreaController = testController.presentationAreas.find(
+            eachArea => eachArea.id === presArea.id,
+          );
+          if (!presAreaController) {
+            fail('Could not find presentation area controller');
+          }
+          presAreaController.addListener('occupantsChange', occupantsChangeListener);
+
+          // Perform the update
+          const eventListener = getEventListener(mockSocket, 'interactableUpdate');
+          eventListener(presArea);
+
+          expect(occupantsChangeListener).toBeCalledTimes(1);
+        });
+        it('Does not emit an occupantsChange if the occupants have not changed', () => {
+          const presArea = occupiedPresentationArea();
+          presArea.title = nanoid();
+
+          //Set up an occupantsChange listener
+          const occupantsChangeListener = jest.fn();
+          const presAreaController = testController.presentationAreas.find(
+            eachArea => eachArea.id === presArea.id,
+          );
+          if (!presAreaController) {
+            fail('Could not find presentation area controller');
+          }
+          presAreaController.addListener('occupantsChange', occupantsChangeListener);
+
+          // Perform the update
+          const eventListener = getEventListener(mockSocket, 'interactableUpdate');
+          eventListener(presArea);
+
+          expect(occupantsChangeListener).not.toBeCalled();
+        });
+      });
     });
   });
   describe('Processing events that are received over the socket from the townService', () => {

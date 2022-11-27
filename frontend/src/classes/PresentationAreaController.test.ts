@@ -22,10 +22,12 @@ describe('PresentationAreaController', () => {
     ];
     testArea.numSlides = 5;
     mockClear(mockListeners.slideChange);
+    mockClear(mockListeners.numSlidesChange);
     mockClear(mockListeners.occupantsChange);
     mockClear(mockListeners.documentChange);
     mockClear(mockListeners.titleChange);
     testArea.addListener('slideChange', mockListeners.slideChange);
+    testArea.addListener('numSlidesChange', mockListeners.numSlidesChange);
     testArea.addListener('occupantsChange', mockListeners.occupantsChange);
     testArea.addListener('documentChange', mockListeners.documentChange);
     testArea.addListener('titleChange', mockListeners.titleChange);
@@ -94,7 +96,7 @@ describe('PresentationAreaController', () => {
       expect(mockListeners.slideChange).not.toBeCalled();
       expect(mockListeners.titleChange).not.toBeCalled();
     });
-    it('emits the changeSlide event when setting the property and updates the model', () => {
+    it('emits the slideChange event when setting the property and updates the model', () => {
       const newSlide = testArea.slide + 1;
       testArea.slide = newSlide;
       expect(testArea.slide).toEqual(newSlide);
@@ -109,7 +111,7 @@ describe('PresentationAreaController', () => {
         title: testArea.title,
       });
     });
-    it('does not emit the changeSlide event when the slide is already 0', () => {
+    it('does not emit the slideChange event when the slide is already 0', () => {
       const newDocument = nanoid();
       testArea.document = newDocument;
       expect(testArea.document).toEqual(newDocument);
@@ -169,7 +171,7 @@ describe('PresentationAreaController', () => {
       expect(mockListeners.documentChange).toBeCalledWith(newDocument);
       expect(testArea.document).toEqual(newDocument);
     });
-    it('emits the changeSlide event when setting the property and updates the model', () => {
+    it('emits the slideChange event when setting the property and updates the model', () => {
       const newSlide = testArea.slide + 1;
       testArea.slide = newSlide;
       expect(testArea.slide).toEqual(newSlide);
@@ -187,7 +189,7 @@ describe('PresentationAreaController', () => {
         title: testArea.title,
       });
     });
-    it('does not emit the changeSlide event when setting the property to the same document', () => {
+    it('does not emit the slideChange event when setting the property to the same document', () => {
       const newSlide = testArea.slide + 1;
       testArea.slide = newSlide;
       expect(testArea.slide).toEqual(newSlide);
@@ -195,6 +197,34 @@ describe('PresentationAreaController', () => {
       const newDocument = testArea.document;
       testArea.document = newDocument;
       expect(mockListeners.slideChange).toBeCalledTimes(1);
+      expect(testArea.toPresentationAreaModel()).toEqual({
+        id: testArea.id,
+        numSlides: testArea.numSlides,
+        occupantsByID: testArea.occupants.map(eachOccupant => eachOccupant.id),
+        document: testArea.document,
+        slide: testArea.slide,
+        title: testArea.title,
+      });
+    });
+  });
+  describe('Setting the numSlides property', () => {
+    it('does not update the property if the new numSlides is the same as the old', () => {
+      const origNumSlides = testArea.numSlides;
+      testArea.numSlides = origNumSlides;
+      expect(testArea.numSlides).toEqual(origNumSlides);
+      expect(mockListeners.documentChange).not.toBeCalled();
+      expect(mockListeners.slideChange).not.toBeCalled();
+      expect(mockListeners.titleChange).not.toBeCalled();
+      expect(mockListeners.numSlidesChange).not.toBeCalled();
+    });
+    it('emits the numSlidesChange event when setting the property and updates the model', () => {
+      const newNumSlides = testArea.numSlides + 1;
+      testArea.numSlides = newNumSlides;
+      expect(mockListeners.numSlidesChange).toBeCalledWith(newNumSlides);
+      expect(testArea.numSlides).toEqual(newNumSlides);
+      expect(mockListeners.documentChange).not.toBeCalled();
+      expect(mockListeners.slideChange).not.toBeCalled();
+      expect(mockListeners.titleChange).not.toBeCalled();
       expect(testArea.toPresentationAreaModel()).toEqual({
         id: testArea.id,
         numSlides: testArea.numSlides,
@@ -213,6 +243,7 @@ describe('PresentationAreaController', () => {
       expect(mockListeners.documentChange).not.toBeCalled();
       expect(mockListeners.slideChange).not.toBeCalled();
       expect(mockListeners.titleChange).not.toBeCalled();
+      expect(mockListeners.numSlidesChange).not.toBeCalled();
     });
     it('emits the titleChange event when setting the property and updates the model', () => {
       const newTitle = nanoid();

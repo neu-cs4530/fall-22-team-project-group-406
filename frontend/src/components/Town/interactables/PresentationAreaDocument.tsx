@@ -24,10 +24,6 @@ const useStyles = makeStyles({
     width: '100%',
   }),
 
-  pdfDocument: () => ({
-    height: 'fit-content',
-  }),
-
   pdfPage: () => ({
     '& div': {
       display: 'none',
@@ -90,11 +86,9 @@ export function PresentationAreaDocument({
   const classes = useStyles();
 
   return (
-    // <Container className='participant-wrapper'>
     <>
       Presentation Area: {controller.id}
       <Document
-        className={classes.pdfDocument}
         file={document}
         ref={reactPdfRef}
         onLoadSuccess={(pdf: pdfjs.PDFDocumentProxy) => {

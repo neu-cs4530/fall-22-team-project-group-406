@@ -10,7 +10,7 @@ export default class PresentationArea extends InteractableArea {
   /* The document url of the presentation area, or undefined if it is not set */
   public document?: string;
 
-  /* The slide number of the document */
+  /* The current slide number of the document */
   public slide: number;
 
   /* The title of the presentation area, or undefined if it is not set */

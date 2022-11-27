@@ -94,7 +94,7 @@ export default class PresentationAreaController extends (EventEmitter as new () 
   }
 
   /**
-   * Sets the slide for this presentation area. Emits a slideChange event if the slide changes.
+   * Sets the current slide for this presentation area. Emits a slideChange event if the slide changes.
    */
   set slide(newSlide: number) {
     if (this._slide !== newSlide && newSlide >= 0 && newSlide < this._numSlides) {
@@ -122,6 +122,9 @@ export default class PresentationAreaController extends (EventEmitter as new () 
     }
   }
 
+  /**
+   * Returns the title of the presentation area.
+   */
   get title(): string | undefined {
     return this._title;
   }

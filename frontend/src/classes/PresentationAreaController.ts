@@ -27,10 +27,10 @@ export default class PresentationAreaController extends (EventEmitter as new () 
   private _numSlides: number;
 
   private _title?: string;
-  
+
   private _presenter: PlayerController | undefined;
 
-  constructor(id: string, document?: string, slide = 0, numSlides = 0) {
+  constructor(id: string, document?: string, slide = 0, numSlides = 0, title?: string) {
     super();
     this._id = id;
     this._document = document;
@@ -129,14 +129,14 @@ export default class PresentationAreaController extends (EventEmitter as new () 
       this._presenter = newPresenter;
     }
   }
-  
+
   /**
    * Returns the presenter for this presentation area.
    */
   get presenter(): PlayerController | undefined {
     return this._presenter;
   }
-  
+
   /**
    * The title of the presentation area. Changing the title will emit a titleChange event
    *

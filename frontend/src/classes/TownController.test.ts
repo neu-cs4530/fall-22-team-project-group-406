@@ -612,6 +612,27 @@ describe('TownController', () => {
 
           expect(slideChangeListener).not.toBeCalled();
         });
+        it('Does not emit slideChange event if the slide of a presentation area changes and is a negative number', () => {
+          const presArea = occupiedPresentationArea();
+          presArea.numSlides = 1;
+          presArea.slide = -5;
+          //Set up a slideChange listener
+          const slideChangeListener = jest.fn();
+          const presAreaController = testController.presentationAreas.find(
+            eachArea => eachArea.id === presArea.id,
+          );
+          if (!presAreaController) {
+            fail('Could not find presentation area controller');
+            return;
+          }
+          presAreaController.addListener('slideChange', slideChangeListener);
+
+          // Perform the update
+          const eventListener = getEventListener(mockSocket, 'interactableUpdate');
+          eventListener(presArea);
+
+          expect(slideChangeListener).not.toBeCalled();
+        });
         it('Does not emit a titleChange, documentChange, or slideChange event if the title, document, or slide is unchanged', () => {
           const presArea = occupiedPresentationArea();
           //Set up a property change listener

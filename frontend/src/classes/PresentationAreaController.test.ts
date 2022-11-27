@@ -94,7 +94,7 @@ describe('PresentationAreaController', () => {
       expect(mockListeners.slideChange).not.toBeCalled();
       expect(mockListeners.titleChange).not.toBeCalled();
     });
-    it('emits the changeSlide event when setting the property and updates the model', () => {
+    it('emits the slideChange event when setting the property and updates the model', () => {
       const newSlide = testArea.slide + 1;
       testArea.slide = newSlide;
       expect(testArea.slide).toEqual(newSlide);
@@ -109,7 +109,7 @@ describe('PresentationAreaController', () => {
         title: testArea.title,
       });
     });
-    it('does not emit the changeSlide event when the slide is already 0', () => {
+    it('does not emit the slideChange event when the slide is already 0', () => {
       const newDocument = nanoid();
       testArea.document = newDocument;
       expect(testArea.document).toEqual(newDocument);
@@ -169,7 +169,7 @@ describe('PresentationAreaController', () => {
       expect(mockListeners.documentChange).toBeCalledWith(newDocument);
       expect(testArea.document).toEqual(newDocument);
     });
-    it('emits the changeSlide event when setting the property and updates the model', () => {
+    it('emits the slideChange event when setting the property and updates the model', () => {
       const newSlide = testArea.slide + 1;
       testArea.slide = newSlide;
       expect(testArea.slide).toEqual(newSlide);
@@ -187,7 +187,7 @@ describe('PresentationAreaController', () => {
         title: testArea.title,
       });
     });
-    it('does not emit the changeSlide event when setting the property to the same document', () => {
+    it('does not emit the slideChange event when setting the property to the same document', () => {
       const newSlide = testArea.slide + 1;
       testArea.slide = newSlide;
       expect(testArea.slide).toEqual(newSlide);
@@ -205,6 +205,17 @@ describe('PresentationAreaController', () => {
       });
     });
   });
+  describe('Setting the numSlides property', () => {
+    it('does not update the property if the new numSlides is the same as the old', () => {
+      const origNumSlides = testArea.numSlides;
+      testArea.numSlides = origNumSlides;
+      expect(testArea.numSlides).toEqual(origNumSlides);
+      expect(mockListeners.documentChange).not.toBeCalled();
+      expect(mockListeners.slideChange).not.toBeCalled();
+      expect(mockListeners.titleChange).not.toBeCalled();
+      expect(mockListeners.numSlidesChange).not.toBeCalled();
+    });
+  });
   describe('Setting the title property', () => {
     it('does not update the property if the new title is the same as the old', () => {
       const origTitle = testArea.title;
@@ -213,6 +224,7 @@ describe('PresentationAreaController', () => {
       expect(mockListeners.documentChange).not.toBeCalled();
       expect(mockListeners.slideChange).not.toBeCalled();
       expect(mockListeners.titleChange).not.toBeCalled();
+      expect(mockListeners.numSlidesChange).not.toBeCalled();
     });
     it('emits the titleChange event when setting the property and updates the model', () => {
       const newTitle = nanoid();

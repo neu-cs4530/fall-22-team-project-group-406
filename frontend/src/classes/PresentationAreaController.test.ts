@@ -22,10 +22,12 @@ describe('PresentationAreaController', () => {
     ];
     testArea.numSlides = 5;
     mockClear(mockListeners.slideChange);
+    mockClear(mockListeners.numSlidesChange);
     mockClear(mockListeners.occupantsChange);
     mockClear(mockListeners.documentChange);
     mockClear(mockListeners.titleChange);
     testArea.addListener('slideChange', mockListeners.slideChange);
+    testArea.addListener('numSlidesChange', mockListeners.numSlidesChange);
     testArea.addListener('occupantsChange', mockListeners.occupantsChange);
     testArea.addListener('documentChange', mockListeners.documentChange);
     testArea.addListener('titleChange', mockListeners.titleChange);
@@ -214,6 +216,23 @@ describe('PresentationAreaController', () => {
       expect(mockListeners.slideChange).not.toBeCalled();
       expect(mockListeners.titleChange).not.toBeCalled();
       expect(mockListeners.numSlidesChange).not.toBeCalled();
+    });
+    it('emits the numSlidesChange event when setting the property and updates the model', () => {
+      const newNumSlides = testArea.numSlides + 1;
+      testArea.numSlides = newNumSlides;
+      expect(mockListeners.numSlidesChange).toBeCalledWith(newNumSlides);
+      expect(testArea.numSlides).toEqual(newNumSlides);
+      expect(mockListeners.documentChange).not.toBeCalled();
+      expect(mockListeners.slideChange).not.toBeCalled();
+      expect(mockListeners.titleChange).not.toBeCalled();
+      expect(testArea.toPresentationAreaModel()).toEqual({
+        id: testArea.id,
+        numSlides: testArea.numSlides,
+        occupantsByID: testArea.occupants.map(eachOccupant => eachOccupant.id),
+        document: testArea.document,
+        slide: testArea.slide,
+        title: testArea.title,
+      });
     });
   });
   describe('Setting the title property', () => {

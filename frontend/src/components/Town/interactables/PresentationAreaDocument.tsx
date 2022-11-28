@@ -119,7 +119,7 @@ export function PresentationAreaDocument({
         />
       </Document>
       <p>
-        Page {currentSlide + 1} of {numSlides}
+        Slide: {currentSlide + 1}/{numSlides}
       </p>
     </>
   );

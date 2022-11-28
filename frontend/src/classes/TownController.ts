@@ -14,9 +14,9 @@ import {
   ChatMessage,
   CoveyTownSocket,
   PlayerLocation,
+  PresentationArea as PresentationAreaModel,
   TownSettingsUpdate,
   ViewingArea as ViewingAreaModel,
-  PresentationArea as PresentationAreaModel,
 } from '../types/CoveyTownSocket';
 import { isConversationArea, isPresentationArea, isViewingArea } from '../types/TypeUtils';
 import ConversationAreaController from './ConversationAreaController';
@@ -293,8 +293,8 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
   }
 
   private set _players(newPlayers: PlayerController[]) {
-    this.emit('playersChanged', newPlayers);
     this._playersInternal = newPlayers;
+    this.emit('playersChanged', newPlayers);
   }
 
   public get conversationAreas() {
@@ -446,9 +446,16 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
           eachArea => eachArea.id === interactable.id,
         );
         if (updatedPresentationArea) {
+          const emptyNow = updatedPresentationArea.isEmpty();
           updatedPresentationArea.document = interactable.document;
           updatedPresentationArea.occupants = this._playersByIDs(interactable.occupantsByID);
+          updatedPresentationArea.numSlides = interactable.numSlides;
           updatedPresentationArea.slide = interactable.slide;
+          updatedPresentationArea.title = interactable.title;
+          const emptyAfterChange = updatedPresentationArea.isEmpty();
+          if (emptyNow !== emptyAfterChange) {
+            this.emit('presentationAreasChanged', this._presentationAreas);
+          }
         }
       } else if (isViewingArea(interactable)) {
         const updatedViewingArea = this._viewingAreas.find(

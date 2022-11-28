@@ -1,4 +1,3 @@
-import { Container, flexbox } from '@chakra-ui/react';
 import { makeStyles } from '@material-ui/core/styles';
 import React, { useEffect, useRef, useState } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
@@ -10,14 +9,19 @@ import SelectDocumentModal from './SelectDocumentModal';
 
 const useStyles = makeStyles({
   // style rule
-  documentWrapper: props => ({
+  documentWrapper: () => ({
     alignItems: 'center',
+    color: 'white',
     display: 'flex',
+    flexDirection: 'column',
+    fontSize: '2rem',
     justifyContent: 'center',
+    position: 'relative',
+    zIndex: 1,
   }),
 
-  presentationBackground: props => ({
-    backgroundColor: 'rgba(0,0,0,.3)',
+  presentationBackground: () => ({
+    backgroundColor: 'rgba(0,0,0,.8)',
     height: '100%',
     left: '0',
     position: 'fixed',
@@ -25,14 +29,10 @@ const useStyles = makeStyles({
     width: '100%',
   }),
 
-  pdfDocument: props => ({
-    height: 'fit-content',
-  }),
-
-  pdfPage: props => ({
-    '& div': {
-      display: 'none',
-    },
+  checkbox: () => ({
+    position: 'relative',
+    width: '24px',
+    height: '24px',
   }),
 });
 
@@ -66,12 +66,24 @@ export function PresentationAreaDocument({
   controller: PresentationAreaController;
   initialDocument: string;
 }): JSX.Element {
+  const [isDocumentLoading, setIsDocumentLoading] = useState(true);
   const [document, setDocument] = useState<string | undefined>(initialDocument);
   const [currentSlide, setCurrentSlide] = useState<number>(controller.slide);
+  const [localSlide, setLocalSlide] = useState<number>(controller.slide);
+  const [shouldSync, setShouldSync] = useState<boolean>(true);
+  const [numSlides, setNumSlides] = useState<number>(0);
   const townController = useTownController();
 
   const reactPdfRef = useRef<Document>(null);
   const reactPdfPageRef = useRef<Page>(null);
+
+  const classes = useStyles();
+
+  useEffect(() => {
+    if (controller.numSlides !== 0) {
+      setNumSlides(controller.numSlides);
+    }
+  }, [controller.numSlides]);
 
   useEffect(() => {
     const documentListener = (newDocument: string | undefined) => {
@@ -79,37 +91,104 @@ export function PresentationAreaDocument({
     };
     const slideListener = (newSlide: number) => {
       setCurrentSlide(newSlide);
+      if (shouldSync) {
+        // If we're syncing, then we should update the local slide to match the new slide
+        setLocalSlide(newSlide);
+      }
+    };
+    const numSlidesListener = (newNumSlides: number) => {
+      setNumSlides(newNumSlides);
     };
     controller.addListener('documentChange', documentListener);
     controller.addListener('slideChange', slideListener);
+    controller.addListener('numSlidesChange', numSlidesListener);
     return () => {
       controller.removeListener('documentChange', documentListener);
       controller.removeListener('slideChange', slideListener);
+      controller.removeListener('numSlidesChange', numSlidesListener);
     };
-  }, [controller]);
+  }, [controller, shouldSync]);
 
-  const classes = useStyles();
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (shouldSync) {
+        // If the user is currently syncing, we don't want to allow them to change slides
+        return;
+      }
+      if (event.key === '1') {
+        setLocalSlide(prevSlide => {
+          if (prevSlide > 0) {
+            return prevSlide - 1;
+          }
+          return prevSlide;
+        });
+      } else if (event.key === '2') {
+        setLocalSlide(prevSlide => {
+          if (prevSlide < controller.numSlides - 1) {
+            return prevSlide + 1;
+          }
+          return prevSlide;
+        });
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [controller.numSlides, shouldSync]);
+
+  useEffect(() => {
+    if (shouldSync) {
+      // If we start syncing, we should update the local slide to match the current slide
+      setLocalSlide(currentSlide);
+    }
+  }, [currentSlide, shouldSync]);
 
   return (
-    // <Container className='participant-wrapper'>
     <>
-      Presentation Area: {controller.id}
+      <h1>
+        {/* Table name followed by the title of the presentation */}
+        {controller.id}: {controller.title}
+      </h1>
+      {!isDocumentLoading && controller.presenter?.id !== townController.ourPlayer.id && (
+        <label>
+          {/* Checkbox to toggle whether the user's presentation should be synced with the presenter */}
+          Sync with Presenter
+          <input
+            type='checkbox'
+            className={classes.checkbox}
+            onChange={() => setShouldSync(!shouldSync)}
+            checked={shouldSync}
+          />
+        </label>
+      )}
       <Document
-        className={classes.pdfDocument}
         file={document}
         ref={reactPdfRef}
+        renderMode='canvas'
         onLoadSuccess={(pdf: pdfjs.PDFDocumentProxy) => {
           controller.numSlides = pdf.numPages;
+          setIsDocumentLoading(false);
         }}>
         <Page
-          className={classes.pdfPage}
-          pageIndex={currentSlide}
+          pageIndex={shouldSync ? currentSlide : localSlide}
           ref={reactPdfPageRef}
+          scale={0.7}
+          renderAnnotationLayer={false}
+          renderTextLayer={false}
+          renderInteractiveForms={false}
           onRenderSuccess={() => {
-            townController.emitPresentationAreaUpdate(controller);
+            // Only presenter can emit changes for the document
+            if (controller.presenter?.id === townController.ourPlayer.id) {
+              townController.emitPresentationAreaUpdate(controller);
+              controller.emit('numSlidesChange', numSlides);
+            }
           }}
         />
       </Document>
+      <p>
+        Slide: {currentSlide + 1}/{numSlides}
+      </p>
     </>
   );
 }
@@ -150,6 +229,10 @@ export function PresentationArea({
 
   useEffect(() => {
     const setSlide = (event: KeyboardEvent) => {
+      // guard clause to prevent changing slides from users besides the presenter
+      if (presentationAreaController.presenter?.id !== townController.ourPlayer.id) {
+        return;
+      }
       if (event.key === '1') {
         presentationAreaController.slide -= 1;
       } else if (event.key === '2') {
@@ -160,7 +243,7 @@ export function PresentationArea({
     return () => {
       document.removeEventListener('keydown', setSlide);
     };
-  }, [presentationAreaController]);
+  }, [presentationAreaController, townController.ourPlayer.id]);
 
   const classes = useStyles();
 

@@ -2,7 +2,13 @@ import assert from 'assert';
 import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 import { nanoid } from 'nanoid';
 import { Town } from '../api/Model';
-import { ConversationArea, Interactable, TownEmitter, ViewingArea } from '../types/CoveyTownSocket';
+import {
+  ConversationArea,
+  Interactable,
+  PresentationArea,
+  TownEmitter,
+  ViewingArea,
+} from '../types/CoveyTownSocket';
 import TownsStore from '../lib/TownsStore';
 import {
   createConversationForTesting,
@@ -12,6 +18,7 @@ import {
   isViewingArea,
   isConversationArea,
   MockedPlayer,
+  isPresentationArea,
 } from '../TestUtils';
 import { TownsController } from './TownsController';
 
@@ -353,6 +360,76 @@ describe('TownsController integration tests', () => {
         viewingArea.id = nanoid();
         await expect(
           controller.createViewingArea(testingTown.townID, sessionToken, viewingArea),
+        ).rejects.toThrow();
+      });
+    });
+    describe('Create Presentation Area', () => {
+      it('Executes without error when creating a new presentation area', async () => {
+        const presentationArea = interactables.find(isPresentationArea) as PresentationArea;
+        if (!presentationArea) {
+          fail('Expected at least one presentation area to be returned in the initial join data');
+        } else {
+          const newPresentationArea: PresentationArea = {
+            numSlides: 5,
+            slide: 0,
+            occupantsByID: [],
+            id: presentationArea.id,
+            document: nanoid(),
+            title: nanoid(),
+          };
+          await controller.createPresentationArea(
+            testingTown.townID,
+            sessionToken,
+            newPresentationArea,
+          );
+          // Check to see that the presentation area was successfully updated
+          const townEmitter = getBroadcastEmitterForTownID(testingTown.townID);
+          const updateMessage = getLastEmittedEvent(townEmitter, 'interactableUpdate');
+          if (isPresentationArea(updateMessage)) {
+            expect(updateMessage).toEqual(newPresentationArea);
+          } else {
+            fail('Expected an interactableUpdate to be dispatched with the new presentation area');
+          }
+        }
+      });
+      it('Returns an error message if the town ID is invalid', async () => {
+        const presentationArea = interactables.find(isPresentationArea) as PresentationArea;
+        const newPresentationArea: PresentationArea = {
+          numSlides: 5,
+          slide: 0,
+          occupantsByID: [],
+          id: presentationArea.id,
+          document: nanoid(),
+          title: nanoid(),
+        };
+        await expect(
+          controller.createPresentationArea(nanoid(), sessionToken, newPresentationArea),
+        ).rejects.toThrow();
+      });
+      it('Checks for a valid session token before creating a presentation area', async () => {
+        const invalidSessionToken = nanoid();
+        const presentationArea = interactables.find(isPresentationArea) as PresentationArea;
+        const newPresentationArea: PresentationArea = {
+          numSlides: 5,
+          slide: 0,
+          occupantsByID: [],
+          id: presentationArea.id,
+          document: nanoid(),
+          title: nanoid(),
+        };
+        await expect(
+          controller.createPresentationArea(
+            testingTown.townID,
+            invalidSessionToken,
+            newPresentationArea,
+          ),
+        ).rejects.toThrow();
+      });
+      it('Returns an error message if addPresentationArea returns false', async () => {
+        const presentationArea = interactables.find(isPresentationArea) as PresentationArea;
+        presentationArea.id = nanoid();
+        await expect(
+          controller.createPresentationArea(testingTown.townID, sessionToken, presentationArea),
         ).rejects.toThrow();
       });
     });

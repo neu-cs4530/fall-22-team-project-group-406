@@ -34,6 +34,7 @@ export default function SelectDocumentModal({
   const presentationAreaController = usePresentationAreaController(presentationArea?.name);
 
   const [document, setDocument] = useState<string>(presentationArea?.defaultDocument || '');
+  const [title, setTitle] = useState<string>(presentationArea?.titleText?.text || '');
 
   useEffect(() => {
     if (isOpen) {
@@ -55,7 +56,9 @@ export default function SelectDocumentModal({
       const request: PresentationAreaModel = {
         id: presentationAreaController.id,
         document,
+        title: title,
         slide: 0,
+        numSlides: 0,
         occupantsByID: [],
       };
       try {
@@ -64,6 +67,8 @@ export default function SelectDocumentModal({
           title: 'Document set!',
           status: 'success',
         });
+        // Set the presenter to the current player
+        presentationAreaController.presenter = coveyTownController.ourPlayer;
         coveyTownController.unPause();
       } catch (err) {
         if (err instanceof Error) {
@@ -81,7 +86,7 @@ export default function SelectDocumentModal({
         }
       }
     }
-  }, [coveyTownController, document, presentationAreaController, toast]);
+  }, [coveyTownController, document, presentationAreaController, toast, title]);
 
   return (
     <Modal
@@ -99,6 +104,17 @@ export default function SelectDocumentModal({
             ev.preventDefault();
             createPresentationArea();
           }}>
+          <ModalBody pb={6}>
+            <FormControl>
+              <FormLabel htmlFor='title'>Document Title</FormLabel>
+              <Input
+                id='title'
+                name='title'
+                value={title}
+                onChange={e => setTitle(e.target.value)}
+              />
+            </FormControl>
+          </ModalBody>
           <ModalBody pb={6}>
             <FormControl>
               <FormLabel htmlFor='document'>Document URL</FormLabel>

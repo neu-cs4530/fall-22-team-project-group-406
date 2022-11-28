@@ -28,6 +28,12 @@ const useStyles = makeStyles({
     top: '0',
     width: '100%',
   }),
+
+  checkbox: () => ({
+    position: 'relative',
+    width: '24px',
+    height: '24px',
+  }),
 });
 
 /**
@@ -60,13 +66,18 @@ export function PresentationAreaDocument({
   controller: PresentationAreaController;
   initialDocument: string;
 }): JSX.Element {
+  const [isDocumentLoading, setIsDocumentLoading] = useState(true);
   const [document, setDocument] = useState<string | undefined>(initialDocument);
   const [currentSlide, setCurrentSlide] = useState<number>(controller.slide);
+  const [localSlide, setLocalSlide] = useState<number>(controller.slide);
+  const [shouldSync, setShouldSync] = useState<boolean>(true);
   const [numSlides, setNumSlides] = useState<number>(0);
   const townController = useTownController();
 
   const reactPdfRef = useRef<Document>(null);
   const reactPdfPageRef = useRef<Page>(null);
+
+  const classes = useStyles();
 
   useEffect(() => {
     if (controller.numSlides !== 0) {
@@ -80,6 +91,10 @@ export function PresentationAreaDocument({
     };
     const slideListener = (newSlide: number) => {
       setCurrentSlide(newSlide);
+      if (shouldSync) {
+        // If we're syncing, then we should update the local slide to match the new slide
+        setLocalSlide(newSlide);
+      }
     };
     const numSlidesListener = (newNumSlides: number) => {
       setNumSlides(newNumSlides);
@@ -92,7 +107,42 @@ export function PresentationAreaDocument({
       controller.removeListener('slideChange', slideListener);
       controller.removeListener('numSlidesChange', numSlidesListener);
     };
-  }, [controller]);
+  }, [controller, shouldSync]);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (shouldSync) {
+        // If the user is currently syncing, we don't want to allow them to change slides
+        return;
+      }
+      if (event.key === '1') {
+        setLocalSlide(prevSlide => {
+          if (prevSlide > 0) {
+            return prevSlide - 1;
+          }
+          return prevSlide;
+        });
+      } else if (event.key === '2') {
+        setLocalSlide(prevSlide => {
+          if (prevSlide < controller.numSlides - 1) {
+            return prevSlide + 1;
+          }
+          return prevSlide;
+        });
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [controller.numSlides, shouldSync]);
+
+  useEffect(() => {
+    if (shouldSync) {
+      // If we start syncing, we should update the local slide to match the current slide
+      setLocalSlide(currentSlide);
+    }
+  }, [currentSlide, shouldSync]);
 
   return (
     <>
@@ -100,15 +150,28 @@ export function PresentationAreaDocument({
         {/* Table name followed by the title of the presentation */}
         {controller.id}: {controller.title}
       </h1>
+      {!isDocumentLoading && controller.presenter?.id !== townController.ourPlayer.id && (
+        <label>
+          {/* Checkbox to toggle whether the user's presentation should be synced with the presenter */}
+          Sync with Presenter
+          <input
+            type='checkbox'
+            className={classes.checkbox}
+            onChange={() => setShouldSync(!shouldSync)}
+            checked={shouldSync}
+          />
+        </label>
+      )}
       <Document
         file={document}
         ref={reactPdfRef}
         renderMode='canvas'
         onLoadSuccess={(pdf: pdfjs.PDFDocumentProxy) => {
           controller.numSlides = pdf.numPages;
+          setIsDocumentLoading(false);
         }}>
         <Page
-          pageIndex={currentSlide}
+          pageIndex={shouldSync ? currentSlide : localSlide}
           ref={reactPdfPageRef}
           scale={0.7}
           renderAnnotationLayer={false}

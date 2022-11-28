@@ -73,7 +73,7 @@ export default function SelectDocumentModal({
       } catch (err) {
         if (err instanceof Error) {
           toast({
-            title: 'Unable to set Document URL',
+            title: 'Unable to create presentation',
             description: err.toString(),
             status: 'error',
           });

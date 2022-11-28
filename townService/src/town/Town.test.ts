@@ -20,6 +20,7 @@ import {
   PresentationArea as PresentationAreaModel,
 } from '../types/CoveyTownSocket';
 import ConversationArea from './ConversationArea';
+import PresentationArea from './PresentationArea';
 import Town from './Town';
 
 const mockTwilioVideo = mockDeep<TwilioVideo>();
@@ -736,6 +737,56 @@ describe('Town', () => {
           id: 'Name1',
           topic: newTopic,
           occupantsByID: [player.id],
+        });
+      });
+    });
+  });
+  describe('addPresentationArea', () => {
+    beforeEach(async () => {
+      town.initializeFromMap(testingMaps.oneConvOneViewingOnePresentation);
+    });
+    it('Should return false if no area exists with that ID', () => {
+      expect(
+        town.addPresentationArea({
+          id: nanoid(),
+          occupantsByID: [],
+          numSlides: 5,
+          slide: 0,
+          document: nanoid(),
+          title: nanoid(),
+        }),
+      ).toEqual(false);
+    });
+    describe('When successful', () => {
+      const newModel: PresentationAreaModel = {
+        id: 'Name3',
+        slide: 1,
+        numSlides: 5,
+        occupantsByID: [],
+        document: nanoid(),
+        title: nanoid(),
+      };
+      beforeEach(() => {
+        playerTestData.moveTo(160, 570); // Inside of "Name3" area
+        expect(town.addPresentationArea(newModel)).toBe(true);
+      });
+      it('Should update the local model for that area', () => {
+        const presArea = town.getInteractable('Name3') as PresentationArea;
+        expect(presArea.document).toEqual(newModel.document);
+      });
+      it('Should include any players in that area as occupants', () => {
+        const presArea = town.getInteractable('Name3') as PresentationArea;
+        expect(presArea.occupantsByID).toEqual([player.id]);
+      });
+      it('Should emit an interactableUpdate message', () => {
+        const lastEmittedUpdate = getLastEmittedEvent(townEmitter, 'interactableUpdate');
+        expect(lastEmittedUpdate).toEqual({
+          id: 'Name3',
+          slide: 1,
+          numSlides: 5,
+          occupantsByID: [player.id],
+          document: newModel.document,
+          title: newModel.title,
         });
       });
     });

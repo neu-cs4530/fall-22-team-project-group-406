@@ -72,6 +72,7 @@ export function PresentationAreaDocument({
   controller: PresentationAreaController;
   initialDocument: string;
 }): JSX.Element {
+  const [isDocumentLoading, setIsDocumentLoading] = useState(true);
   const [document, setDocument] = useState<string | undefined>(initialDocument);
   const [currentSlide, setCurrentSlide] = useState<number>(controller.slide);
   const [localSlide, setLocalSlide] = useState<number>(controller.slide);
@@ -143,7 +144,7 @@ export function PresentationAreaDocument({
         {/* Table name followed by the title of the presentation */}
         {controller.id}: {controller.title}
       </h1>
-      {controller.presenter?.id !== townController.ourPlayer.id && (
+      {!isDocumentLoading && controller.presenter?.id !== townController.ourPlayer.id && (
         <label>
           {/* Checkbox to toggle whether the user's presentation should be synced with the presenter */}
           Sync with Presenter
@@ -160,6 +161,7 @@ export function PresentationAreaDocument({
         ref={reactPdfRef}
         onLoadSuccess={(pdf: pdfjs.PDFDocumentProxy) => {
           controller.numSlides = pdf.numPages;
+          setIsDocumentLoading(false);
         }}>
         <Page
           className={classes.pdfPage}

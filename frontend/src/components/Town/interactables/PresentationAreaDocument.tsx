@@ -28,12 +28,6 @@ const useStyles = makeStyles({
     top: '0',
     width: '100%',
   }),
-
-  pdfPage: () => ({
-    '& div': {
-      display: 'none',
-    },
-  }),
 });
 
 /**
@@ -68,10 +62,17 @@ export function PresentationAreaDocument({
 }): JSX.Element {
   const [document, setDocument] = useState<string | undefined>(initialDocument);
   const [currentSlide, setCurrentSlide] = useState<number>(controller.slide);
+  const [numSlides, setNumSlides] = useState<number>(0);
   const townController = useTownController();
 
   const reactPdfRef = useRef<Document>(null);
   const reactPdfPageRef = useRef<Page>(null);
+
+  useEffect(() => {
+    if (controller.numSlides !== 0) {
+      setNumSlides(controller.numSlides);
+    }
+  }, [controller.numSlides]);
 
   useEffect(() => {
     const documentListener = (newDocument: string | undefined) => {
@@ -80,15 +81,18 @@ export function PresentationAreaDocument({
     const slideListener = (newSlide: number) => {
       setCurrentSlide(newSlide);
     };
+    const numSlidesListener = (newNumSlides: number) => {
+      setNumSlides(newNumSlides);
+    };
     controller.addListener('documentChange', documentListener);
     controller.addListener('slideChange', slideListener);
+    controller.addListener('numSlidesChange', numSlidesListener);
     return () => {
       controller.removeListener('documentChange', documentListener);
       controller.removeListener('slideChange', slideListener);
+      controller.removeListener('numSlidesChange', numSlidesListener);
     };
   }, [controller]);
-
-  const classes = useStyles();
 
   return (
     <>
@@ -99,21 +103,29 @@ export function PresentationAreaDocument({
       <Document
         file={document}
         ref={reactPdfRef}
+        renderMode='canvas'
         onLoadSuccess={(pdf: pdfjs.PDFDocumentProxy) => {
           controller.numSlides = pdf.numPages;
         }}>
         <Page
-          className={classes.pdfPage}
           pageIndex={currentSlide}
           ref={reactPdfPageRef}
+          scale={0.7}
+          renderAnnotationLayer={false}
+          renderTextLayer={false}
+          renderInteractiveForms={false}
           onRenderSuccess={() => {
             // Only presenter can emit changes for the document
             if (controller.presenter?.id === townController.ourPlayer.id) {
               townController.emitPresentationAreaUpdate(controller);
+              controller.emit('numSlidesChange', numSlides);
             }
           }}
         />
       </Document>
+      <p>
+        Slide: {currentSlide + 1}/{numSlides}
+      </p>
     </>
   );
 }

@@ -12,13 +12,14 @@ describe('PresentationArea', () => {
   const document = nanoid();
   const numSlides = 5;
   const slide = 0;
+  const title = nanoid();
   const id = nanoid();
   let newPlayer: Player;
 
   beforeEach(() => {
     mockClear(townEmitter);
     testArea = new PresentationArea(
-      { document, slide, numSlides, id, occupantsByID: [] },
+      { document, slide, numSlides, title, id, occupantsByID: [] },
       testAreaBox,
       townEmitter,
     );
@@ -35,6 +36,17 @@ describe('PresentationArea', () => {
       expect(testArea.isActive).toBe(false);
     });
   });
+  test('toModel sets the document, ID, slide, numSlides, and occupantsByID', () => {
+    const model = testArea.toModel();
+    expect(model).toEqual({
+      document,
+      id,
+      slide,
+      numSlides,
+      title,
+      occupantsByID: [newPlayer.id],
+    });
+  });
   describe('add', () => {
     it('Adds the player to the occupants list and emits an interactableUpdate event', () => {
       expect(testArea.occupantsByID).toEqual([newPlayer.id]);
@@ -45,6 +57,7 @@ describe('PresentationArea', () => {
         slide,
         id,
         numSlides,
+        title,
         occupantsByID: [newPlayer.id],
       });
     });
@@ -56,7 +69,7 @@ describe('PresentationArea', () => {
     });
   });
   describe('updateModel', () => {
-    test('updateModel sets video, isPlaying and elapsedTimeSec', () => {
+    test('updateModel sets slide, document, numSlides, and title', () => {
       testArea.updateModel({
         id: 'ignore',
         numSlides: 10,
@@ -78,6 +91,18 @@ describe('PresentationArea', () => {
       expect(() =>
         PresentationArea.fromMapObject(
           { id: 1, name: nanoid(), visible: true, x: 0, y: 0 },
+          townEmitter,
+        ),
+      ).toThrowError();
+      expect(() =>
+        PresentationArea.fromMapObject(
+          { id: 1, name: nanoid(), visible: true, x: 0, y: 0, width: 50 },
+          townEmitter,
+        ),
+      ).toThrowError();
+      expect(() =>
+        PresentationArea.fromMapObject(
+          { id: 1, name: nanoid(), visible: true, x: 0, y: 0, height: 50 },
           townEmitter,
         ),
       ).toThrowError();

@@ -88,6 +88,7 @@ export function PresentationAreaDocument({
     const slideListener = (newSlide: number) => {
       setCurrentSlide(newSlide);
       if (shouldSync) {
+        // If we're syncing, then we should update the local slide to match the new slide
         setLocalSlide(newSlide);
       }
     };
@@ -102,6 +103,7 @@ export function PresentationAreaDocument({
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (shouldSync) {
+        // If the user is currently syncing, we don't want to allow them to change slides
         return;
       }
       if (event.key === '1') {
@@ -128,6 +130,7 @@ export function PresentationAreaDocument({
 
   useEffect(() => {
     if (shouldSync) {
+      // If we start syncing, we should update the local slide to match the current slide
       setLocalSlide(currentSlide);
     }
   }, [currentSlide, shouldSync]);

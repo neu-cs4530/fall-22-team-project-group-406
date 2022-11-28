@@ -663,7 +663,7 @@ describe('TownController', () => {
             eachArea => eachArea.id === presArea.id,
           );
           if (!presAreaController) {
-            fail('Could not find conversation area controller');
+            fail('Could not find presentation area controller');
           }
           presAreaController.addListener('occupantsChange', occupantsChangeListener);
 
@@ -683,7 +683,7 @@ describe('TownController', () => {
             eachArea => eachArea.id === presArea.id,
           );
           if (!presAreaController) {
-            fail('Could not find conversation area controller');
+            fail('Could not find presentation area controller');
           }
           presAreaController.addListener('occupantsChange', occupantsChangeListener);
 

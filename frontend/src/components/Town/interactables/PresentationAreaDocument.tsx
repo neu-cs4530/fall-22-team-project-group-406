@@ -81,11 +81,16 @@ export function PresentationAreaDocument({
     const slideListener = (newSlide: number) => {
       setCurrentSlide(newSlide);
     };
+    const numSlidesListener = (newNumSlides: number) => {
+      setNumSlides(newNumSlides);
+    };
     controller.addListener('documentChange', documentListener);
     controller.addListener('slideChange', slideListener);
+    controller.addListener('numSlidesChange', numSlidesListener);
     return () => {
       controller.removeListener('documentChange', documentListener);
       controller.removeListener('slideChange', slideListener);
+      controller.removeListener('numSlidesChange', numSlidesListener);
     };
   }, [controller]);
 

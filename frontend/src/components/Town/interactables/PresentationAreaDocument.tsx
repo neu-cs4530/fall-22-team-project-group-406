@@ -11,12 +11,17 @@ const useStyles = makeStyles({
   // style rule
   documentWrapper: () => ({
     alignItems: 'center',
+    color: 'white',
     display: 'flex',
+    flexDirection: 'column',
+    fontSize: '2rem',
     justifyContent: 'center',
+    position: 'relative',
+    zIndex: 1,
   }),
 
   presentationBackground: () => ({
-    backgroundColor: 'rgba(0,0,0,.3)',
+    backgroundColor: 'rgba(0,0,0,.8)',
     height: '100%',
     left: '0',
     position: 'fixed',
@@ -132,8 +137,13 @@ export function PresentationAreaDocument({
   return (
     <>
       Presentation Area: {controller.id}
+      <h1>
+        {/* Table name followed by the title of the presentation */}
+        {controller.id}: {controller.title}
+      </h1>
       {controller.presenter?.id !== townController.ourPlayer.id && (
         <label>
+          {/* Checkbox to toggle whether the user's presentation should be synced with the presenter */}
           Sync with Presenter
           <input
             type='checkbox'

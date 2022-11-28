@@ -89,8 +89,8 @@ export default class PresentationAreaController extends (EventEmitter as new () 
    */
   set numSlides(newNumSlides: number) {
     if (this._numSlides !== newNumSlides) {
-      this._numSlides = newNumSlides;
       this.emit('numSlidesChange', newNumSlides);
+      this._numSlides = newNumSlides;
     }
   }
 
@@ -213,6 +213,11 @@ export function usePresentationAreaOccupants(area: PresentationAreaController): 
   return occupants;
 }
 
+/**
+ * A react hook to retrieve the slide number of a PresentationAreaController.
+ *
+ * This hook will re-render any components that use it when the title changes.
+ */
 export function usePresentationAreaSlide(area: PresentationAreaController): number {
   const [slide, setSlide] = useState(area.slide);
   useEffect(() => {
@@ -224,6 +229,11 @@ export function usePresentationAreaSlide(area: PresentationAreaController): numb
   return slide;
 }
 
+/**
+ * A react hook to retrieve the document of a PresentationAreaController.
+ *
+ * This hook will re-render any components that use it when the title changes.
+ */
 export function usePresentationAreaDocument(area: PresentationAreaController): string | undefined {
   const [document, setDocument] = useState(area.document);
   useEffect(() => {

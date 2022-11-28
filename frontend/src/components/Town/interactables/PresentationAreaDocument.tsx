@@ -136,7 +136,6 @@ export function PresentationAreaDocument({
 
   return (
     <>
-      Presentation Area: {controller.id}
       <h1>
         {/* Table name followed by the title of the presentation */}
         {controller.id}: {controller.title}

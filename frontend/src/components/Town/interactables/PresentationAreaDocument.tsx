@@ -29,12 +29,6 @@ const useStyles = makeStyles({
     width: '100%',
   }),
 
-  pdfPage: () => ({
-    '& div': {
-      display: 'none',
-    },
-  }),
-
   checkbox: () => ({
     position: 'relative',
     width: '24px',
@@ -77,10 +71,19 @@ export function PresentationAreaDocument({
   const [currentSlide, setCurrentSlide] = useState<number>(controller.slide);
   const [localSlide, setLocalSlide] = useState<number>(controller.slide);
   const [shouldSync, setShouldSync] = useState<boolean>(true);
+  const [numSlides, setNumSlides] = useState<number>(0);
   const townController = useTownController();
 
   const reactPdfRef = useRef<Document>(null);
   const reactPdfPageRef = useRef<Page>(null);
+
+  const classes = useStyles();
+
+  useEffect(() => {
+    if (controller.numSlides !== 0) {
+      setNumSlides(controller.numSlides);
+    }
+  }, [controller.numSlides]);
 
   useEffect(() => {
     const documentListener = (newDocument: string | undefined) => {
@@ -93,11 +96,16 @@ export function PresentationAreaDocument({
         setLocalSlide(newSlide);
       }
     };
+    const numSlidesListener = (newNumSlides: number) => {
+      setNumSlides(newNumSlides);
+    };
     controller.addListener('documentChange', documentListener);
     controller.addListener('slideChange', slideListener);
+    controller.addListener('numSlidesChange', numSlidesListener);
     return () => {
       controller.removeListener('documentChange', documentListener);
       controller.removeListener('slideChange', slideListener);
+      controller.removeListener('numSlidesChange', numSlidesListener);
     };
   }, [controller, shouldSync]);
 
@@ -136,8 +144,6 @@ export function PresentationAreaDocument({
     }
   }, [currentSlide, shouldSync]);
 
-  const classes = useStyles();
-
   return (
     <>
       <h1>
@@ -159,22 +165,30 @@ export function PresentationAreaDocument({
       <Document
         file={document}
         ref={reactPdfRef}
+        renderMode='canvas'
         onLoadSuccess={(pdf: pdfjs.PDFDocumentProxy) => {
           controller.numSlides = pdf.numPages;
           setIsDocumentLoading(false);
         }}>
         <Page
-          className={classes.pdfPage}
           pageIndex={shouldSync ? currentSlide : localSlide}
           ref={reactPdfPageRef}
+          scale={0.7}
+          renderAnnotationLayer={false}
+          renderTextLayer={false}
+          renderInteractiveForms={false}
           onRenderSuccess={() => {
             // Only presenter can emit changes for the document
             if (controller.presenter?.id === townController.ourPlayer.id) {
               townController.emitPresentationAreaUpdate(controller);
+              controller.emit('numSlidesChange', numSlides);
             }
           }}
         />
       </Document>
+      <p>
+        Slide: {currentSlide + 1}/{numSlides}
+      </p>
     </>
   );
 }

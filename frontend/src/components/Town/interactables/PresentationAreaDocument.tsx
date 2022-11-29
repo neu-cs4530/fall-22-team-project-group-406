@@ -6,6 +6,9 @@ import { useInteractable, usePresentationAreaController } from '../../../classes
 import useTownController from '../../../hooks/useTownController';
 import PresentationAreaInteractable from './PresentationArea';
 import SelectDocumentModal from './SelectDocumentModal';
+import { throttle } from 'lodash';
+
+const KEYBOARD_THROTTLE_MS = 150;
 
 const useStyles = makeStyles({
   // style rule
@@ -131,9 +134,10 @@ export function PresentationAreaDocument({
         });
       }
     };
-    window.addEventListener('keydown', handleKeyDown);
+    const throttledHandleKeyDown = throttle(handleKeyDown, KEYBOARD_THROTTLE_MS);
+    window.addEventListener('keydown', throttledHandleKeyDown);
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keydown', throttledHandleKeyDown);
     };
   }, [controller.numSlides, shouldSync]);
 
@@ -239,9 +243,10 @@ export function PresentationArea({
         presentationAreaController.slide += 1;
       }
     };
-    document.addEventListener('keydown', setSlide);
+    const throttledSetSlide = throttle(setSlide, KEYBOARD_THROTTLE_MS);
+    document.addEventListener('keydown', throttledSetSlide);
     return () => {
-      document.removeEventListener('keydown', setSlide);
+      document.removeEventListener('keydown', throttledSetSlide);
     };
   }, [presentationAreaController, townController.ourPlayer.id]);
 

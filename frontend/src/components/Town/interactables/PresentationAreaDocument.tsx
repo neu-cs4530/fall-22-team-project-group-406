@@ -13,9 +13,10 @@ const useStyles = makeStyles({
     alignItems: 'center',
     color: 'white',
     display: 'flex',
+    flex: '1 1 auto',
     flexDirection: 'column',
     fontSize: '2rem',
-    justifyContent: 'center',
+    justifyContent: 'start',
     position: 'relative',
     zIndex: 1,
   }),
@@ -29,10 +30,43 @@ const useStyles = makeStyles({
     width: '100%',
   }),
 
-  checkbox: () => ({
+  presentationHeader: () => ({
+    alignItems: 'center',
+    display: 'flex',
+    justifyContent: 'center',
+  }),
+
+  slide: () => ({
+    bottom: '2rem',
+    fontSize: '1.5rem',
+    left: '2rem',
+    position: 'fixed',
+  }),
+
+  syncedTrue: () => ({
+    backgroundColor: '#63F6FF',
+    border: '1px solid #63F6FF',
+    borderRadius: '.5rem',
+    cursor: 'pointer',
+    color: 'black',
+    fontSize: '1.25rem',
+    height: 'fit-content',
+    left: '6.5rem',
+    padding: '0rem 0.75rem .25rem .75rem',
     position: 'relative',
-    width: '24px',
-    height: '24px',
+  }),
+
+  syncedFalse: () => ({
+    border: '1px solid #63F6FF',
+    backgroundColor: 'transparent',
+    borderRadius: '.5rem',
+    cursor: 'pointer',
+    color: '#63F6FF',
+    fontSize: '1.25rem',
+    height: 'fit-content',
+    left: '6.5rem',
+    padding: '0rem 0.75rem .25rem .75rem',
+    position: 'relative',
   }),
 });
 
@@ -144,24 +178,24 @@ export function PresentationAreaDocument({
     }
   }, [currentSlide, shouldSync]);
 
+  const activeSlide = shouldSync ? currentSlide : localSlide;
+
   return (
     <>
-      <h1>
-        {/* Table name followed by the title of the presentation */}
-        {controller.id}: {controller.title}
-      </h1>
-      {!isDocumentLoading && controller.presenter?.id !== townController.ourPlayer.id && (
-        <label>
-          {/* Checkbox to toggle whether the user's presentation should be synced with the presenter */}
-          Sync with Presenter
-          <input
-            type='checkbox'
-            className={classes.checkbox}
-            onChange={() => setShouldSync(!shouldSync)}
-            checked={shouldSync}
-          />
-        </label>
-      )}
+      <div className={classes.presentationHeader}>
+        <h1>
+          {/* Table name followed by the title of the presentation */}
+          {controller.id}: {controller.title}
+        </h1>
+        {!isDocumentLoading && controller.presenter?.id !== townController.ourPlayer.id && (
+          <button
+            className={shouldSync ? classes.syncedTrue : classes.syncedFalse}
+            onClick={() => setShouldSync(!shouldSync)}>
+            {/* Checkbox to toggle whether the user's presentation should be synced with the presenter */}
+            Sync
+          </button>
+        )}
+      </div>
       <Document
         file={document}
         ref={reactPdfRef}
@@ -171,7 +205,7 @@ export function PresentationAreaDocument({
           setIsDocumentLoading(false);
         }}>
         <Page
-          pageIndex={shouldSync ? currentSlide : localSlide}
+          pageIndex={activeSlide}
           ref={reactPdfPageRef}
           scale={0.7}
           renderAnnotationLayer={false}
@@ -186,8 +220,8 @@ export function PresentationAreaDocument({
           }}
         />
       </Document>
-      <p>
-        Slide: {currentSlide + 1}/{numSlides}
+      <p className={classes.slide}>
+        Slide: {activeSlide + 1}/{numSlides}
       </p>
     </>
   );

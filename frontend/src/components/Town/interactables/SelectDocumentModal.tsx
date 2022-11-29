@@ -52,7 +52,7 @@ export default function SelectDocumentModal({
   const toast = useToast();
 
   const createPresentationArea = useCallback(async () => {
-    if (document && presentationAreaController) {
+    if (document && title && presentationAreaController) {
       const request: PresentationAreaModel = {
         id: presentationAreaController.id,
         document,
@@ -64,7 +64,7 @@ export default function SelectDocumentModal({
       try {
         await coveyTownController.createPresentationArea(request);
         toast({
-          title: 'Document set!',
+          title: 'Presentation Created!',
           status: 'success',
         });
         // Set the presenter to the current player
@@ -73,7 +73,7 @@ export default function SelectDocumentModal({
       } catch (err) {
         if (err instanceof Error) {
           toast({
-            title: 'Unable to set Document URL',
+            title: 'Unable to create presentation',
             description: err.toString(),
             status: 'error',
           });

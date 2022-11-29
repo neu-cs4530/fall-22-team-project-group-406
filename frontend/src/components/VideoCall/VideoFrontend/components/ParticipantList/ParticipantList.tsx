@@ -64,9 +64,14 @@ const useStyles = makeStyles((theme: Theme) =>
       // },
       width: '100%',
       justifyContent: 'center',
-      alignContent: 'center'
+      alignContent: 'center',
     },
-  })
+    wrapper: {
+      display: 'flex',
+      height: '100vh',
+      flexDirection: 'column',
+    },
+  }),
 );
 
 export default function ParticipantList() {
@@ -154,7 +159,9 @@ export default function ParticipantList() {
     </>
   );
 
-  return <main
+  return (
+    <main
+      className={classes.wrapper}
       // className={clsx(
       //   classes.gridContainer,
       //   {
@@ -170,4 +177,5 @@ export default function ParticipantList() {
       <div className={classes.gridInnerContainer}>{participantsEl}</div>
       <PresentationAreaDocument />
     </main>
+  );
 }

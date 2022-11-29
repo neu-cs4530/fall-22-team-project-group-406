@@ -641,6 +641,11 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
     }
   }
 
+  /**
+   * Retrieve the presentation area controller that corresponds to a presentationAreaModel, creating one if necessary
+   * @param presentationArea the presentation area model
+   * @returns a presentation area controller (either existing or newly created)
+   */
   public getPresentationAreaController(
     presentationArea: PresentationArea,
   ): PresentationAreaController {

@@ -711,7 +711,7 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
     const presentationArea = this.presentationAreas.find(
       (area: PresentationAreaController) => area.id === ourPlayerInteractableID,
     );
-    return presentationArea ? presentationArea.presenter : undefined;
+    return presentationArea?.presenter;
   }
 }
 

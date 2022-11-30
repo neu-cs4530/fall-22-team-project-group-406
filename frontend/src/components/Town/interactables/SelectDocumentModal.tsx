@@ -69,6 +69,7 @@ export default function SelectDocumentModal({
         slide: 0,
         numSlides: 0,
         occupantsByID: [],
+        presenterID: coveyTownController.ourPlayer.id,
       };
       try {
         await coveyTownController.createPresentationArea(request);

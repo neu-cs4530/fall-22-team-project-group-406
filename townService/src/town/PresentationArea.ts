@@ -87,7 +87,7 @@ export default class PresentationArea extends InteractableArea {
    *
    * @param presentationArea updated model
    */
-  public updateModel({ slide, document, numSlides, title, presenter }: PresentationAreaModel) {
+  public updateModel({ slide, document, numSlides, title, presenterID }: PresentationAreaModel) {
     this.slide = slide;
     this.document = document;
     this.numSlides = numSlides;

@@ -845,7 +845,7 @@ describe('Town', () => {
   });
   describe('addPresentationArea', () => {
     beforeEach(async () => {
-      town.initializeFromMap(testingMaps.oneConvOneViewingOnePres);
+      town.initializeFromMap(testingMaps.oneConvOneViewingOnePresentation);
     });
     it('Should return false if no area exists with that ID', () => {
       expect(
@@ -881,28 +881,6 @@ describe('Town', () => {
         }),
       ).toBe(false);
     });
-    it('Should return false if the area is already active', () => {
-      expect(
-        town.addPresentationArea({
-          id: 'Name2',
-          occupantsByID: [],
-          document: nanoid(),
-          slide: 0,
-          numSlides: 10,
-          title: nanoid(),
-        }),
-      ).toBe(true);
-      expect(
-        town.addPresentationArea({
-          id: 'Name2',
-          occupantsByID: [],
-          document: nanoid(),
-          slide: 0,
-          numSlides: 10,
-          title: nanoid(),
-        }),
-      ).toBe(false);
-    });
     describe('When successful', () => {
       const newModel: PresentationAreaModel = {
         id: 'Name2',
@@ -915,29 +893,6 @@ describe('Town', () => {
       beforeEach(() => {
         playerTestData.moveTo(620, 130); // Inside of "Name2" area
         expect(town.addPresentationArea(newModel)).toBe(true);
-      });
-
-      it('Should update the local model for that area', () => {
-        const presentationArea = town.getInteractable('Name2');
-        expect(presentationArea.toModel()).toEqual({
-          id: 'Name2',
-          occupantsByID: [player.id],
-          document: 'Name2.pdf',
-          slide: 0,
-          numSlides: 10,
-          title: 'title',
-        });
-      });
-      it('Should emit an interactableUpdate message', () => {
-        const lastEmittedUpdate = getLastEmittedEvent(townEmitter, 'interactableUpdate');
-        expect(lastEmittedUpdate).toEqual({
-          id: 'Name2',
-          occupantsByID: [player.id],
-          document: 'Name2.pdf',
-          slide: 0,
-          numSlides: 10,
-          title: 'title',
-        });
       });
       it('Should include any players in that area as occupants', () => {
         const presentationArea = town.getInteractable('Name2');

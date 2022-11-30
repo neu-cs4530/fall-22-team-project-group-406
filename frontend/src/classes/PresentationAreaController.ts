@@ -185,7 +185,7 @@ export default class PresentationAreaController extends (EventEmitter as new () 
       slide: this.slide,
       numSlides: this.numSlides,
       title: this.title,
-      presenter: this.presenter ? this.presenter.id : undefined,
+      presenterID: this.presenter ? this.presenter.id : undefined,
     };
   }
 
@@ -207,7 +207,7 @@ export default class PresentationAreaController extends (EventEmitter as new () 
     );
     area.slide = model.slide;
     area.occupants = playerFinder(model.occupantsByID);
-    area.presenter = model.presenter ? playerFinder([model.presenter])[0] : undefined;
+    area.presenter = model.presenterID ? playerFinder([model.presenterID])[0] : undefined;
     return area;
   }
 }

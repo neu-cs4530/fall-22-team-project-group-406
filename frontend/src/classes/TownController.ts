@@ -452,8 +452,8 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
           updatedPresentationArea.numSlides = interactable.numSlides;
           updatedPresentationArea.slide = interactable.slide;
           updatedPresentationArea.title = interactable.title;
-          updatedPresentationArea.presenter = interactable.presenter
-            ? this._playersByIDs([interactable.presenter])[0]
+          updatedPresentationArea.presenter = interactable.presenterID
+            ? this._playersByIDs([interactable.presenterID])[0]
             : undefined;
           const emptyAfterChange = updatedPresentationArea.isEmpty();
           if (emptyNow !== emptyAfterChange) {

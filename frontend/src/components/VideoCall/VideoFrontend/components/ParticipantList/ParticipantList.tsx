@@ -1,56 +1,56 @@
-import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
-import clsx from "clsx";
-import React from "react";
-import { useNearbyPresenter, usePlayersInVideoCall } from "../../../../../classes/TownController";
-import PresentationAreaDocument from "../../../../Town/interactables/PresentationAreaDocument";
-import ViewingAreaVideo from "../../../../Town/interactables/ViewingAreaVideo";
-import useMainParticipant from "../../hooks/useMainParticipant/useMainParticipant";
-import useParticipants, { ParticipantWithSlot } from "../../hooks/useParticipants/useParticipants";
-import useScreenShareParticipant from "../../hooks/useScreenShareParticipant/useScreenShareParticipant";
-import useVideoContext from "../../hooks/useVideoContext/useVideoContext";
-import Participant from "../Participant/Participant";
-import useSelectedParticipant from "../VideoProvider/useSelectedParticipant/useSelectedParticipant";
+import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
+import clsx from 'clsx';
+import React from 'react';
+import { useNearbyPresenter, usePlayersInVideoCall } from '../../../../../classes/TownController';
+import PresentationAreaDocument from '../../../../Town/interactables/PresentationAreaDocument';
+import ViewingAreaVideo from '../../../../Town/interactables/ViewingAreaVideo';
+import useMainParticipant from '../../hooks/useMainParticipant/useMainParticipant';
+import useParticipants, { ParticipantWithSlot } from '../../hooks/useParticipants/useParticipants';
+import useScreenShareParticipant from '../../hooks/useScreenShareParticipant/useScreenShareParticipant';
+import useVideoContext from '../../hooks/useVideoContext/useVideoContext';
+import Participant from '../Participant/Participant';
+import useSelectedParticipant from '../VideoProvider/useSelectedParticipant/useSelectedParticipant';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     container: {
-      overflowY: "auto",
-      background: "rgb(79, 83, 85)",
-      gridArea: "1 / 2 / 1 / 3",
+      overflowY: 'auto',
+      background: 'rgb(79, 83, 85)',
+      gridArea: '1 / 2 / 1 / 3',
       zIndex: 5,
-      [theme.breakpoints.down("sm")]: {
-        gridArea: "2 / 1 / 3 / 3",
-        overflowY: "initial",
-        overflowX: "auto",
-        display: "flex"
+      [theme.breakpoints.down('sm')]: {
+        gridArea: '2 / 1 / 3 / 3',
+        overflowY: 'initial',
+        overflowX: 'auto',
+        display: 'flex'
       }
     },
     transparentBackground: {
-      background: "transparent"
+      background: 'transparent'
     },
     scrollContainer: {
-      display: "flex",
-      justifyContent: "center"
+      display: 'flex',
+      justifyContent: 'center'
     },
     innerScrollContainer: {
       width: `calc(${theme.sidebarWidth}px - 3em)`,
-      padding: "1.5em 0",
-      [theme.breakpoints.down("sm")]: {
-        width: "auto",
+      padding: '1.5em 0',
+      [theme.breakpoints.down('sm')]: {
+        width: 'auto',
         padding: `${theme.sidebarMobilePadding}px`,
-        display: "flex"
+        display: 'flex'
       }
     },
     gridContainer: {
-      gridArea: "1 / 1 / 1 / 3",
-      overflowX: "hidden",
-      overflowY: "auto",
-      [theme.breakpoints.down("sm")]: {
-        gridArea: "1 / 1 / 3 / 1"
+      gridArea: '1 / 1 / 1 / 3',
+      overflowX: 'hidden',
+      overflowY: 'auto',
+      [theme.breakpoints.down('sm')]: {
+        gridArea: '1 / 1 / 3 / 1'
       }
     },
     gridInnerContainer: {
-      display: "flex",
+      display: 'flex',
       // gridTemplateColumns: '1fr 1fr 1fr 1fr',
       // gridAutoRows: '1fr',
       // [theme.breakpoints.down('md')]: {
@@ -62,14 +62,14 @@ const useStyles = makeStyles((theme: Theme) =>
       // [theme.breakpoints.down('xs')]: {
       //   gridTemplateColumns: '1fr',
       // },
-      width: "100%",
-      justifyContent: "center",
-      alignContent: "center"
+      width: '100%',
+      justifyContent: 'center',
+      alignContent: 'center'
     },
     wrapper: {
-      display: "flex",
-      height: "100vh",
-      flexDirection: "column"
+      display: 'flex',
+      height: '100vh',
+      flexDirection: 'column'
     }
   })
 );
@@ -87,7 +87,7 @@ export default function ParticipantList() {
   const isRemoteParticipantScreenSharing = screenShareParticipant && screenShareParticipant !== localParticipant;
 
 
-  const classes = useStyles("fullwidth");
+  const classes = useStyles('fullwidth');
   // if (participants.length === 0) return null; // Don't render this component if there are no remote participants.
 
   // return (

@@ -76,6 +76,7 @@ export interface PresentationArea {
   slide: number;
   numSlides: number;
   title?: string;
+  presenter?: string;
 }
 
 export interface ServerToClientEvents {

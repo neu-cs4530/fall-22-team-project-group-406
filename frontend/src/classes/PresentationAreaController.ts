@@ -30,13 +30,21 @@ export default class PresentationAreaController extends (EventEmitter as new () 
 
   private _presenter: PlayerController | undefined;
 
-  constructor(id: string, document?: string, slide = 0, numSlides = 0, title?: string) {
+  constructor(
+    id: string,
+    document?: string,
+    slide = 0,
+    numSlides = 0,
+    title?: string,
+    presenter?: PlayerController,
+  ) {
     super();
     this._id = id;
     this._document = document;
     this._slide = slide;
     this._numSlides = numSlides;
     this._title = title;
+    this._presenter = presenter;
   }
 
   /**
@@ -177,6 +185,7 @@ export default class PresentationAreaController extends (EventEmitter as new () 
       slide: this.slide,
       numSlides: this.numSlides,
       title: this.title,
+      presenter: this.presenter ? this.presenter.id : undefined,
     };
   }
 
@@ -198,6 +207,7 @@ export default class PresentationAreaController extends (EventEmitter as new () 
     );
     area.slide = model.slide;
     area.occupants = playerFinder(model.occupantsByID);
+    area.presenter = model.presenter ? playerFinder([model.presenter])[0] : undefined;
     return area;
   }
 }

@@ -439,7 +439,8 @@
                  "y":1108.33333333333
                 }, 
                 {
-                 "height":141.999666666667,
+                 "type":"ConversationArea",
+                 "height":125.333,
                  "id":23,
                  "name":"Presentation Table 7",
                  "properties":[

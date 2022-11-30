@@ -843,7 +843,63 @@ describe('Town', () => {
       });
     });
   });
-
+  describe('addPresentationArea', () => {
+    beforeEach(async () => {
+      town.initializeFromMap(testingMaps.oneConvOneViewingOnePresentation);
+    });
+    it('Should return false if no area exists with that ID', () => {
+      expect(
+        town.addPresentationArea({
+          id: nanoid(),
+          occupantsByID: [],
+          document: nanoid(),
+          slide: 0,
+          numSlides: 10,
+          title: nanoid(),
+        }),
+      ).toBe(false);
+    });
+    it('Should return false if the requested document is empty', () => {
+      expect(
+        town.addPresentationArea({
+          id: 'Name2',
+          occupantsByID: [],
+          document: '',
+          slide: 0,
+          numSlides: 10,
+          title: nanoid(),
+        }),
+      ).toBe(false);
+      expect(
+        town.addPresentationArea({
+          id: 'Name2',
+          occupantsByID: [],
+          document: undefined,
+          slide: 0,
+          numSlides: 10,
+          title: nanoid(),
+        }),
+      ).toBe(false);
+    });
+    describe('When successful', () => {
+      const newModel: PresentationAreaModel = {
+        id: 'Name2',
+        occupantsByID: [],
+        document: 'Name2.pdf',
+        slide: 0,
+        numSlides: 10,
+        title: 'title',
+      };
+      beforeEach(() => {
+        playerTestData.moveTo(620, 130); // Inside of "Name2" area
+        expect(town.addPresentationArea(newModel)).toBe(true);
+      });
+      it('Should include any players in that area as occupants', () => {
+        const presentationArea = town.getInteractable('Name2');
+        expect(presentationArea.occupantsByID).toEqual([player.id]);
+      });
+    });
+  });
   describe('disconnectAllPlayers', () => {
     beforeEach(() => {
       town.disconnectAllPlayers();

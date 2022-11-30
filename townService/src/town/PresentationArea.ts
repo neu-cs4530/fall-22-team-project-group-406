@@ -92,7 +92,7 @@ export default class PresentationArea extends InteractableArea {
     this.document = document;
     this.numSlides = numSlides;
     this.title = title;
-    this.presenterID = presenter;
+    this.presenterID = presenterID;
   }
 
   /**

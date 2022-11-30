@@ -5,6 +5,7 @@ import {
   TownEmitter,
 } from '../types/CoveyTownSocket';
 import InteractableArea from './InteractableArea';
+import Player from '../lib/Player';
 
 export default class PresentationArea extends InteractableArea {
   /* The document url of the presentation area, or undefined if it is not set */
@@ -19,6 +20,9 @@ export default class PresentationArea extends InteractableArea {
   /* The title of the presentation area, or undefined if it is not set */
   public title?: string;
 
+  /* The presenter of the presentation area, or undefined if it is not set */
+  public presenterID?: string;
+
   /** The presentation area is "active" when there are players inside of it  */
   public get isActive(): boolean {
     return this._occupants.length > 0;
@@ -32,7 +36,7 @@ export default class PresentationArea extends InteractableArea {
    * @param townEmitter a broadcast emitter that can be used to emit updates to players
    */
   public constructor(
-    { document, id, slide, numSlides, title }: PresentationAreaModel,
+    { document, id, slide, numSlides, title, presenterID }: PresentationAreaModel,
     coordinates: BoundingBox,
     townEmitter: TownEmitter,
   ) {
@@ -41,6 +45,25 @@ export default class PresentationArea extends InteractableArea {
     this.slide = slide;
     this.numSlides = numSlides;
     this.title = title;
+    this.presenterID = presenterID;
+  }
+
+  /**
+   * Removes a player from this presentation area.
+   *
+   * Extends the base behavior of InteractableArea to reset the document, title,
+   * and presenter if the player to be removed is the presenter.
+   *
+   * @param player
+   */
+  public remove(player: Player) {
+    super.remove(player);
+    if (player.id === this.presenterID) {
+      this.document = undefined;
+      this.title = undefined;
+      this.presenterID = undefined;
+      this._emitAreaChanged();
+    }
   }
 
   /**
@@ -55,6 +78,7 @@ export default class PresentationArea extends InteractableArea {
       slide: this.slide,
       numSlides: this.numSlides,
       title: this.title,
+      presenterID: this.presenterID,
     };
   }
 
@@ -63,11 +87,12 @@ export default class PresentationArea extends InteractableArea {
    *
    * @param presentationArea updated model
    */
-  public updateModel({ slide, document, numSlides, title }: PresentationAreaModel) {
+  public updateModel({ slide, document, numSlides, title, presenterID }: PresentationAreaModel) {
     this.slide = slide;
     this.document = document;
     this.numSlides = numSlides;
     this.title = title;
+    this.presenterID = presenterID;
   }
 
   /**
@@ -82,7 +107,7 @@ export default class PresentationArea extends InteractableArea {
   ): PresentationArea {
     const { name, width, height } = mapObject;
     if (!width || !height) {
-      throw new Error(`Malformed viewing area ${name}`);
+      throw new Error(`Malformed presentation area ${name}`);
     }
     const rect: BoundingBox = { x: mapObject.x, y: mapObject.y, width, height };
     return new PresentationArea(

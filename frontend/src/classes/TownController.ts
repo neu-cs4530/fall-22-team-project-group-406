@@ -293,8 +293,8 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
   }
 
   private set _players(newPlayers: PlayerController[]) {
-    this.emit('playersChanged', newPlayers);
     this._playersInternal = newPlayers;
+    this.emit('playersChanged', newPlayers);
   }
 
   public get conversationAreas() {
@@ -452,6 +452,9 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
           updatedPresentationArea.numSlides = interactable.numSlides;
           updatedPresentationArea.slide = interactable.slide;
           updatedPresentationArea.title = interactable.title;
+          updatedPresentationArea.presenter = interactable.presenterID
+            ? this._playersByIDs([interactable.presenterID])[0]
+            : undefined;
           const emptyAfterChange = updatedPresentationArea.isEmpty();
           if (emptyNow !== emptyAfterChange) {
             this.emit('presentationAreasChanged', this._presentationAreas);
@@ -641,6 +644,11 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
     }
   }
 
+  /**
+   * Retrieve the presentation area controller that corresponds to a presentationAreaModel, creating one if necessary
+   * @param presentationArea the presentation area model
+   * @returns a presentation area controller (either existing or newly created)
+   */
   public getPresentationAreaController(
     presentationArea: PresentationArea,
   ): PresentationAreaController {
@@ -698,6 +706,17 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
 
   private _playersByIDs(playerIDs: string[]): PlayerController[] {
     return this._playersInternal.filter(eachPlayer => playerIDs.includes(eachPlayer.id));
+  }
+
+  /**
+   * Determine if any presenters are nearby, if player is located at a presentation area
+   */
+  public nearbyPresenter(): PlayerController | undefined {
+    const ourPlayerInteractableID = this.ourPlayer.location.interactableID;
+    const presentationArea = this.presentationAreas.find(
+      (area: PresentationAreaController) => area.id === ourPlayerInteractableID,
+    );
+    return presentationArea?.presenter;
   }
 }
 
@@ -902,4 +921,34 @@ export function usePlayersInVideoCall(): PlayerController[] {
     };
   }, [townController, setPlayersInCall]);
   return playersInCall;
+}
+
+/**
+ * A react hook to retrieve a nearby presenter, if one exists.
+ *
+ * This hook will cause components that  use it to re-render when the state of a nearby presenter changes.
+ *
+ * This hook relies on the TownControllerContext.
+ * @returns the nearby presenter, if one exists
+ */
+export function useNearbyPresenter(): PlayerController | undefined {
+  const townController = useTownController();
+  const [nearbyPresenter, setNearbyPresenter] = useState<PlayerController | undefined>();
+
+  useEffect(() => {
+    const updateNearbyPresenter = () => {
+      setNearbyPresenter(townController.nearbyPresenter());
+    };
+    townController.addListener('playerMoved', updateNearbyPresenter);
+    townController.addListener('playersChanged', updateNearbyPresenter);
+    townController.addListener('presentationAreasChanged', updateNearbyPresenter);
+    updateNearbyPresenter();
+    return () => {
+      townController.removeListener('playerMoved', updateNearbyPresenter);
+      townController.removeListener('playersChanged', updateNearbyPresenter);
+      townController.removeListener('presentationAreasChanged', updateNearbyPresenter);
+    };
+  }, [townController, setNearbyPresenter]);
+
+  return nearbyPresenter;
 }

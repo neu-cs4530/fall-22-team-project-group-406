@@ -1,7 +1,7 @@
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import clsx from 'clsx';
 import React from 'react';
-import { usePlayersInVideoCall } from '../../../../../classes/TownController';
+import { useNearbyPresenter, usePlayersInVideoCall } from '../../../../../classes/TownController';
 import PresentationAreaDocument from '../../../../Town/interactables/PresentationAreaDocument';
 import ViewingAreaVideo from '../../../../Town/interactables/ViewingAreaVideo';
 import useMainParticipant from '../../hooks/useMainParticipant/useMainParticipant';
@@ -22,15 +22,15 @@ const useStyles = makeStyles((theme: Theme) =>
         gridArea: '2 / 1 / 3 / 3',
         overflowY: 'initial',
         overflowX: 'auto',
-        display: 'flex',
-      },
+        display: 'flex'
+      }
     },
     transparentBackground: {
-      background: 'transparent',
+      background: 'transparent'
     },
     scrollContainer: {
       display: 'flex',
-      justifyContent: 'center',
+      justifyContent: 'center'
     },
     innerScrollContainer: {
       width: `calc(${theme.sidebarWidth}px - 3em)`,
@@ -38,16 +38,16 @@ const useStyles = makeStyles((theme: Theme) =>
       [theme.breakpoints.down('sm')]: {
         width: 'auto',
         padding: `${theme.sidebarMobilePadding}px`,
-        display: 'flex',
-      },
+        display: 'flex'
+      }
     },
     gridContainer: {
       gridArea: '1 / 1 / 1 / 3',
       overflowX: 'hidden',
       overflowY: 'auto',
       [theme.breakpoints.down('sm')]: {
-        gridArea: '1 / 1 / 3 / 1',
-      },
+        gridArea: '1 / 1 / 3 / 1'
+      }
     },
     gridInnerContainer: {
       display: 'flex',
@@ -66,6 +66,11 @@ const useStyles = makeStyles((theme: Theme) =>
       justifyContent: 'center',
       alignContent: 'center'
     },
+    wrapper: {
+      display: 'flex',
+      height: '100vh',
+      flexDirection: 'column'
+    }
   })
 );
 
@@ -78,7 +83,9 @@ export default function ParticipantList() {
   const screenShareParticipant = useScreenShareParticipant();
   const mainParticipant = useMainParticipant();
   const nearbyPlayers = usePlayersInVideoCall();
-  const isRemoteParticipantScreenSharing = screenShareParticipant && screenShareParticipant !== localParticipant;
+  const nearbyPresenter = useNearbyPresenter();
+  const isRemoteParticipantScreenSharing =
+    screenShareParticipant && screenShareParticipant !== localParticipant;
 
   const classes = useStyles('fullwidth');
   // if (participants.length === 0) return null; // Don't render this component if there are no remote participants.
@@ -115,46 +122,64 @@ export default function ParticipantList() {
     return x.slot < y.slot ? -1 : x.slot === y.slot ? 0 : 1;
   }
 
+  const showLocalParticipant =
+    !nearbyPresenter || (nearbyPresenter && nearbyPresenter.id == localParticipant.identity);
+
   const participantsEl = (
     <>
-      <Participant
-        participant={localParticipant}
-        isLocalParticipant
-        insideGrid={true}
-                // highlight={highlightedProfiles?.includes(localUserProfile.id) ?? false}
-        slot={0}
-      />
+      {showLocalParticipant && (
+        <Participant
+          participant={localParticipant}
+          isLocalParticipant
+          insideGrid={true}
+          // highlight={highlightedProfiles?.includes(localUserProfile.id) ?? false}
+          slot={0}
+        />
+      )}
+
       <ViewingAreaVideo />
 
       {participants
-        .filter((p) => nearbyPlayers.find((player) => player.id == p.participant.identity))
-        .sort(participantSorter).map((participantWithSlot) => {
+        .filter(p => nearbyPlayers.find(player => player.id == p.participant.identity))
+        .sort(participantSorter)
+        .map(participantWithSlot => {
           const { participant } = participantWithSlot;
           const isSelected = participant === selectedParticipant;
-          const hideParticipant = participant === mainParticipant
-                    && participant !== screenShareParticipant
-                    && !isSelected
-                    && participants.length > 1;
-          const player = nearbyPlayers.find((p) => p.id == participantWithSlot.participant.identity);
-          const remoteProfile = { displayName: player ? player.userName : 'unknown', id: participantWithSlot.participant.identity };
+          const hideParticipant =
+            participant === mainParticipant &&
+            participant !== screenShareParticipant &&
+            !isSelected &&
+            participants.length > 1;
+          const hideNonPresenter = nearbyPresenter && participant.identity !== nearbyPresenter.id;
+          const player = nearbyPlayers.find(p => p.id == participantWithSlot.participant.identity);
+          const remoteProfile = {
+            displayName: player ? player.userName : 'unknown',
+            id: participantWithSlot.participant.identity,
+          };
           return (
-            <Participant
-              key={participant.sid}
-                        // highlight={highlightedProfiles?.includes(participant.identity) ?? false}
-              participant={participant}
-              profile={remoteProfile}
-              isSelected={participant === selectedParticipant}
-              onClick={() => setSelectedParticipant(participant)}
-              hideParticipant={hideParticipant}
-              slot={participantWithSlot.slot}
-              insideGrid={false}
-            />
+            <>
+              {!hideNonPresenter && (
+                <Participant
+                  key={participant.sid}
+                  // highlight={highlightedProfiles?.includes(participant.identity) ?? false}
+                  participant={participant}
+                  profile={remoteProfile}
+                  isSelected={participant === selectedParticipant}
+                  onClick={() => setSelectedParticipant(participant)}
+                  hideParticipant={hideParticipant || hideNonPresenter}
+                  slot={participantWithSlot.slot}
+                  insideGrid={false}
+                />
+              )}
+            </>
           );
         })}
     </>
   );
 
-  return <main
+  return (
+    <main
+      className={classes.wrapper}
       // className={clsx(
       //   classes.gridContainer,
       //   {
@@ -170,4 +195,5 @@ export default function ParticipantList() {
       <div className={classes.gridInnerContainer}>{participantsEl}</div>
       <PresentationAreaDocument />
     </main>
+  );
 }

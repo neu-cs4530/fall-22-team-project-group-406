@@ -363,36 +363,44 @@ describe('TownsController integration tests', () => {
         ).rejects.toThrow();
       });
     });
-    describe('[T1] Create Presentation Area', () => {
+    describe('Create Presentation Area', () => {
       it('Executes without error when creating a new presentation area', async () => {
         const presentationArea = interactables.find(isPresentationArea) as PresentationArea;
         if (!presentationArea) {
           fail('Expected at least one presentation area to be returned in the initial join data');
         } else {
           const newPresentationArea: PresentationArea = {
-            id: presentationArea.id,
+            numSlides: 5,
             slide: 0,
-            numSlides: 10,
+            occupantsByID: [],
+            id: presentationArea.id,
             document: nanoid(),
             title: nanoid(),
-            occupantsByID: [],
           };
           await controller.createPresentationArea(
             testingTown.townID,
             sessionToken,
             newPresentationArea,
           );
+          // Check to see that the presentation area was successfully updated
+          const townEmitter = getBroadcastEmitterForTownID(testingTown.townID);
+          const updateMessage = getLastEmittedEvent(townEmitter, 'interactableUpdate');
+          if (isPresentationArea(updateMessage)) {
+            expect(updateMessage).toEqual(newPresentationArea);
+          } else {
+            fail('Expected an interactableUpdate to be dispatched with the new presentation area');
+          }
         }
       });
       it('Returns an error message if the town ID is invalid', async () => {
         const presentationArea = interactables.find(isPresentationArea) as PresentationArea;
         const newPresentationArea: PresentationArea = {
-          id: presentationArea.id,
+          numSlides: 5,
           slide: 0,
-          numSlides: 10,
+          occupantsByID: [],
+          id: presentationArea.id,
           document: nanoid(),
           title: nanoid(),
-          occupantsByID: [],
         };
         await expect(
           controller.createPresentationArea(nanoid(), sessionToken, newPresentationArea),
@@ -402,12 +410,12 @@ describe('TownsController integration tests', () => {
         const invalidSessionToken = nanoid();
         const presentationArea = interactables.find(isPresentationArea) as PresentationArea;
         const newPresentationArea: PresentationArea = {
-          id: presentationArea.id,
+          numSlides: 5,
           slide: 0,
-          numSlides: 10,
+          occupantsByID: [],
+          id: presentationArea.id,
           document: nanoid(),
           title: nanoid(),
-          occupantsByID: [],
         };
         await expect(
           controller.createPresentationArea(

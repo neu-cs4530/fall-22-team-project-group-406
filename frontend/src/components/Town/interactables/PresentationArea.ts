@@ -72,12 +72,12 @@ export default class PresentationArea extends Interactable {
         if (this.isOverlapping) {
           this._scene.moveOurPlayerTo({ interactableID: this.name });
         }
-        const updateListener = (newTopic: string | undefined) => {
-          if (newTopic) {
+        const updateListener = (newTitle: string | undefined) => {
+          if (newTitle) {
             if (this._infoTextBox && this._infoTextBox.visible) {
               this._infoTextBox.setVisible(false);
             }
-            this.titleText.text = newTopic;
+            this.titleText.text = newTitle;
           } else {
             this.titleText.text = '(No title)';
           }
@@ -105,7 +105,7 @@ export default class PresentationArea extends Interactable {
   }
 
   overlap(): void {
-    if (this._presentationArea === undefined) {
+    if (this._presentationArea?.document === undefined) {
       this._showInfoBox();
     }
   }
@@ -119,7 +119,6 @@ export default class PresentationArea extends Interactable {
   }
 
   interact(): void {
-    this._infoTextBox?.setVisible(false);
     this._isInteracting = true;
   }
 

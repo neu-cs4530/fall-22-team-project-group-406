@@ -20,6 +20,7 @@ import {
   PresentationArea as PresentationAreaModel,
 } from '../types/CoveyTownSocket';
 import ConversationArea from './ConversationArea';
+import PresentationArea from './PresentationArea';
 import Town from './Town';
 
 const mockTwilioVideo = mockDeep<TwilioVideo>();
@@ -343,7 +344,7 @@ const testingMaps: TestMapDict = {
       },
     ],
   },
-  oneConvOneViewingOnePres: {
+  oneConvOneViewingOnePresentation: {
     tiledversion: '1.9.0',
     tileheight: 32,
     tilesets: [],
@@ -366,10 +367,17 @@ const testingMaps: TestMapDict = {
             y: 120,
           },
           {
-            type: 'PresentationArea',
+            type: 'ViewingArea',
             height: 266,
             id: 43,
             name: 'Name2',
+            properties: [
+              {
+                name: 'video',
+                type: 'string',
+                value: 'someURL',
+              },
+            ],
             rotation: 0,
             visible: true,
             width: 467,
@@ -377,15 +385,15 @@ const testingMaps: TestMapDict = {
             y: 120,
           },
           {
-            type: 'ViewingArea',
+            type: 'PresentationArea',
             height: 237,
             id: 54,
             name: 'Name3',
             properties: [
               {
-                name: 'video',
+                name: 'document',
                 type: 'string',
-                value: 'someURL',
+                value: 'someDocument',
               },
             ],
             rotation: 0,
@@ -515,6 +523,46 @@ describe('Town', () => {
           expect(() =>
             getLastEmittedEvent(secondPlayer.socketToRoomMock, 'interactableUpdate'),
           ).toThrowError();
+        });
+      });
+    });
+    describe('interactableUpdate callback', () => {
+      let interactableUpdateHandler: (update: Interactable) => void;
+      beforeEach(() => {
+        town.initializeFromMap(testingMaps.oneConvOneViewingOnePresentation);
+        interactableUpdateHandler = getEventListener(playerTestData.socket, 'interactableUpdate');
+      });
+      describe('When called passing a valid presentation area', () => {
+        let newArea: PresentationAreaModel;
+        let secondPlayer: MockedPlayer;
+        beforeEach(async () => {
+          newArea = {
+            id: 'Name2',
+            occupantsByID: [player.id],
+            document: nanoid(),
+            slide: 0,
+            numSlides: 10,
+            title: nanoid(),
+          };
+          expect(town.addPresentationArea(newArea)).toBe(true);
+          secondPlayer = mockPlayer(town.townID);
+          mockTwilioVideo.getTokenForTown.mockClear();
+          await town.addPlayer(secondPlayer.userName, secondPlayer.socket);
+
+          newArea.slide = 5;
+          newArea.numSlides = 20;
+          mockClear(townEmitter);
+
+          mockClear(secondPlayer.socket);
+          mockClear(secondPlayer.socketToRoomMock);
+          interactableUpdateHandler(newArea);
+        });
+        it('Should update the model for the presentation area', () => {
+          const lastUpdate = getLastEmittedEvent(
+            playerTestData.socketToRoomMock,
+            'interactableUpdate',
+          );
+          expect(lastUpdate).toEqual(newArea);
         });
       });
     });
@@ -689,6 +737,56 @@ describe('Town', () => {
           id: 'Name1',
           topic: newTopic,
           occupantsByID: [player.id],
+        });
+      });
+    });
+  });
+  describe('addPresentationArea', () => {
+    beforeEach(async () => {
+      town.initializeFromMap(testingMaps.oneConvOneViewingOnePresentation);
+    });
+    it('Should return false if no area exists with that ID', () => {
+      expect(
+        town.addPresentationArea({
+          id: nanoid(),
+          occupantsByID: [],
+          numSlides: 5,
+          slide: 0,
+          document: nanoid(),
+          title: nanoid(),
+        }),
+      ).toEqual(false);
+    });
+    describe('When successful', () => {
+      const newModel: PresentationAreaModel = {
+        id: 'Name3',
+        slide: 1,
+        numSlides: 5,
+        occupantsByID: [],
+        document: nanoid(),
+        title: nanoid(),
+      };
+      beforeEach(() => {
+        playerTestData.moveTo(160, 570); // Inside of "Name3" area
+        expect(town.addPresentationArea(newModel)).toBe(true);
+      });
+      it('Should update the local model for that area', () => {
+        const presArea = town.getInteractable('Name3') as PresentationArea;
+        expect(presArea.document).toEqual(newModel.document);
+      });
+      it('Should include any players in that area as occupants', () => {
+        const presArea = town.getInteractable('Name3') as PresentationArea;
+        expect(presArea.occupantsByID).toEqual([player.id]);
+      });
+      it('Should emit an interactableUpdate message', () => {
+        const lastEmittedUpdate = getLastEmittedEvent(townEmitter, 'interactableUpdate');
+        expect(lastEmittedUpdate).toEqual({
+          id: 'Name3',
+          slide: 1,
+          numSlides: 5,
+          occupantsByID: [player.id],
+          document: newModel.document,
+          title: newModel.title,
         });
       });
     });

@@ -30,13 +30,21 @@ export default class PresentationAreaController extends (EventEmitter as new () 
 
   private _presenter: PlayerController | undefined;
 
-  constructor(id: string, document?: string, slide = 0, numSlides = 0, title?: string) {
+  constructor(
+    id: string,
+    document?: string,
+    slide = 0,
+    numSlides = 0,
+    title?: string,
+    presenter?: PlayerController,
+  ) {
     super();
     this._id = id;
     this._document = document;
     this._slide = slide;
     this._numSlides = numSlides;
     this._title = title;
+    this._presenter = presenter;
   }
 
   /**
@@ -89,8 +97,8 @@ export default class PresentationAreaController extends (EventEmitter as new () 
    */
   set numSlides(newNumSlides: number) {
     if (this._numSlides !== newNumSlides) {
-      this._numSlides = newNumSlides;
       this.emit('numSlidesChange', newNumSlides);
+      this._numSlides = newNumSlides;
     }
   }
 
@@ -177,6 +185,7 @@ export default class PresentationAreaController extends (EventEmitter as new () 
       slide: this.slide,
       numSlides: this.numSlides,
       title: this.title,
+      presenterID: this.presenter?.id,
     };
   }
 
@@ -198,6 +207,7 @@ export default class PresentationAreaController extends (EventEmitter as new () 
     );
     area.slide = model.slide;
     area.occupants = playerFinder(model.occupantsByID);
+    area.presenter = model.presenterID ? playerFinder([model.presenterID])[0] : undefined;
     return area;
   }
 }
@@ -213,6 +223,11 @@ export function usePresentationAreaOccupants(area: PresentationAreaController): 
   return occupants;
 }
 
+/**
+ * A react hook to retrieve the slide number of a PresentationAreaController.
+ *
+ * This hook will re-render any components that use it when the title changes.
+ */
 export function usePresentationAreaSlide(area: PresentationAreaController): number {
   const [slide, setSlide] = useState(area.slide);
   useEffect(() => {
@@ -224,6 +239,11 @@ export function usePresentationAreaSlide(area: PresentationAreaController): numb
   return slide;
 }
 
+/**
+ * A react hook to retrieve the document of a PresentationAreaController.
+ *
+ * This hook will re-render any components that use it when the title changes.
+ */
 export function usePresentationAreaDocument(area: PresentationAreaController): string | undefined {
   const [document, setDocument] = useState(area.document);
   useEffect(() => {

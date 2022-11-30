@@ -12,11 +12,20 @@ import {
   ModalOverlay,
   useToast,
 } from '@chakra-ui/react';
+import { makeStyles } from '@material-ui/core/styles';
 import React, { useCallback, useEffect, useState } from 'react';
 import { usePresentationAreaController } from '../../../classes/TownController';
 import useTownController from '../../../hooks/useTownController';
 import { PresentationArea as PresentationAreaModel } from '../../../types/CoveyTownSocket';
 import PresentationArea from './PresentationArea';
+
+const useStyles = makeStyles({
+  // style rule
+  presentationFormHeader: () => ({
+    padding: '1rem 2.5rem !important',
+    textAlign: 'center',
+  }),
+});
 
 /**
  * Modal for selecting a document to present in a presentation area
@@ -52,7 +61,7 @@ export default function SelectDocumentModal({
   const toast = useToast();
 
   const createPresentationArea = useCallback(async () => {
-    if (document && presentationAreaController) {
+    if (document && title && presentationAreaController) {
       const request: PresentationAreaModel = {
         id: presentationAreaController.id,
         document,
@@ -60,11 +69,12 @@ export default function SelectDocumentModal({
         slide: 0,
         numSlides: 0,
         occupantsByID: [],
+        presenterID: coveyTownController.ourPlayer.id,
       };
       try {
         await coveyTownController.createPresentationArea(request);
         toast({
-          title: 'Document set!',
+          title: 'Presentation Created!',
           status: 'success',
         });
         // Set the presenter to the current player
@@ -73,7 +83,7 @@ export default function SelectDocumentModal({
       } catch (err) {
         if (err instanceof Error) {
           toast({
-            title: 'Unable to set Document URL',
+            title: 'Unable to create presentation',
             description: err.toString(),
             status: 'error',
           });
@@ -88,6 +98,8 @@ export default function SelectDocumentModal({
     }
   }, [coveyTownController, document, presentationAreaController, toast, title]);
 
+  const classes = useStyles();
+
   return (
     <Modal
       isOpen={isOpen}
@@ -97,7 +109,9 @@ export default function SelectDocumentModal({
       }}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>Pick a document to present in {presentationAreaController?.id} </ModalHeader>
+        <ModalHeader className={classes.presentationFormHeader}>
+          Create presentation for {presentationAreaController?.id}
+        </ModalHeader>
         <ModalCloseButton />
         <form
           onSubmit={ev => {
@@ -106,7 +120,7 @@ export default function SelectDocumentModal({
           }}>
           <ModalBody pb={6}>
             <FormControl>
-              <FormLabel htmlFor='title'>Document Title</FormLabel>
+              <FormLabel htmlFor='title'>Presentation Title</FormLabel>
               <Input
                 id='title'
                 name='title'
@@ -128,7 +142,7 @@ export default function SelectDocumentModal({
           </ModalBody>
           <ModalFooter>
             <Button colorScheme='blue' mr={3} onClick={createPresentationArea}>
-              Set document
+              Create Presentation
             </Button>
             <Button onClick={closeModal}>Cancel</Button>
           </ModalFooter>

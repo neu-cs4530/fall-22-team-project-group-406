@@ -211,3 +211,63 @@ export default class PresentationAreaController extends (EventEmitter as new () 
     return area;
   }
 }
+
+export function usePresentationAreaOccupants(area: PresentationAreaController): PlayerController[] {
+  const [occupants, setOccupants] = useState(area.occupants);
+  useEffect(() => {
+    area.addListener('occupantsChange', setOccupants);
+    return () => {
+      area.removeListener('occupantsChange', setOccupants);
+    };
+  }, [area]);
+  return occupants;
+}
+
+/**
+ * A react hook to retrieve the slide number of a PresentationAreaController.
+ *
+ * This hook will re-render any components that use it when the title changes.
+ */
+export function usePresentationAreaSlide(area: PresentationAreaController): number {
+  const [slide, setSlide] = useState(area.slide);
+  useEffect(() => {
+    area.addListener('slideChange', setSlide);
+    return () => {
+      area.removeListener('slideChange', setSlide);
+    };
+  }, [area]);
+  return slide;
+}
+
+/**
+ * A react hook to retrieve the document of a PresentationAreaController.
+ *
+ * This hook will re-render any components that use it when the title changes.
+ */
+export function usePresentationAreaDocument(area: PresentationAreaController): string | undefined {
+  const [document, setDocument] = useState(area.document);
+  useEffect(() => {
+    area.addListener('documentChange', setDocument);
+    return () => {
+      area.removeListener('documentChange', setDocument);
+    };
+  }, [area]);
+  return document;
+}
+
+/**
+ * A react hook to retrieve the title of a PresentationAreaController.
+ * If there is currently no title defined, it will return NO_TITLE_STRING.
+ *
+ * This hook will re-render any components that use it when the title changes.
+ */
+export function usePresentationAreaTitle(area: PresentationAreaController): string | undefined {
+  const [title, setTitle] = useState(area.title);
+  useEffect(() => {
+    area.addListener('titleChange', setTitle);
+    return () => {
+      area.removeListener('titleChange', setTitle);
+    };
+  }, [area]);
+  return title || NO_TITLE_STRING;
+}

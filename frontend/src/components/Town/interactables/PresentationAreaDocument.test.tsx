@@ -1,16 +1,17 @@
 import { ChakraProvider } from '@chakra-ui/react';
 import { EventNames } from '@socket.io/component-emitter';
-import { cleanup, render, RenderResult } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, RenderResult } from '@testing-library/react';
 import { mock, MockProxy } from 'jest-mock-extended';
 import React from 'react';
-import { act } from 'react-dom/test-utils';
 import TownController from '../../../classes/TownController';
 import PresentationAreaController, {
   PresentationAreaEvents,
 } from '../../../classes/PresentationAreaController';
 import TownControllerContext from '../../../contexts/TownControllerContext';
-import { PresentationAreaDocument } from './PresentationAreaDocument';
+import { MockReactPdf, PresentationAreaDocument } from './PresentationAreaDocument';
 import { nanoid } from 'nanoid';
+import { Props } from 'react-pdf/dist/Document';
+import { renderToStaticMarkup } from 'react-dom/server';
 
 function renderPresentationArea(
   presentationArea: PresentationAreaController,
@@ -26,6 +27,7 @@ function renderPresentationArea(
 }
 
 describe('Presentation Area Document', () => {
+  const mockDocumentConstructor = jest.fn<never, [Props]>();
   let presentationArea: PresentationAreaController;
   type PresentationAreaEventName = keyof PresentationAreaEvents;
   let addListenerSpy: jest.SpyInstance<
@@ -42,9 +44,9 @@ describe('Presentation Area Document', () => {
 
   let renderData: RenderResult;
   beforeEach(() => {
+    mockDocumentConstructor.mockClear();
     townController = mock<TownController>();
     presentationArea = new PresentationAreaController('test', nanoid(), 0, 10, 'test.pdf');
-
     addListenerSpy = jest.spyOn(presentationArea, 'addListener');
     removeListenerSpy = jest.spyOn(presentationArea, 'removeListener');
 
@@ -83,7 +85,7 @@ describe('Presentation Area Document', () => {
     }
     return removedListeners[0][1] as unknown as PresentationAreaEvents[Ev];
   }
-  describe('[T4] Bridging events from the PresentationAreaController to the ReactPlayer', () => {
+  describe('Bridging events from the PresentationAreaController to the Document', () => {
     describe('Registering PresentationAreaController listeners', () => {
       describe('When rendered', () => {
         it('Registers exactly one documentChange listener', () => {
@@ -129,8 +131,8 @@ describe('Presentation Area Document', () => {
       });
       describe('When re-rendered with a different presentation area controller', () => {
         it('Removes the listeners on the old presentation area controller and adds listeners to the new controller', () => {
-          const origPlayback = getSingleListenerAdded('documentChange');
-          const origProgress = getSingleListenerAdded('slideChange');
+          const origDocument = getSingleListenerAdded('documentChange');
+          const origSlide = getSingleListenerAdded('slideChange');
 
           const newPresentationArea = new PresentationAreaController(
             'test2',
@@ -142,13 +144,30 @@ describe('Presentation Area Document', () => {
           const newAddListenerSpy = jest.spyOn(newPresentationArea, 'addListener');
           renderData.rerender(renderPresentationArea(newPresentationArea, townController));
 
-          expect(getSingleListenerRemoved('documentChange')).toBe(origPlayback);
-          expect(getSingleListenerRemoved('slideChange')).toBe(origProgress);
+          expect(getSingleListenerRemoved('documentChange')).toBe(origDocument);
+          expect(getSingleListenerRemoved('slideChange')).toBe(origSlide);
 
           getSingleListenerAdded('documentChange', newAddListenerSpy);
           getSingleListenerAdded('slideChange', newAddListenerSpy);
         });
       });
+    });
+  });
+  describe('Sync Button Tests', () => {
+    it('Key Events should not do anything when synced', () => {
+      const staticElement = renderToStaticMarkup(
+        renderPresentationArea(presentationArea, townController),
+      );
+      const output = document.createElement('div');
+      output.innerHTML = `${staticElement}`;
+      fireEvent.keyDown(output, { charCode: 50 });
+      expect(presentationArea.slide).toEqual(0);
+    });
+  });
+  describe('Tests MockReactPDF', () => {
+    it('Returns Empty when using MockReactPDF', () => {
+      const mockPDF = new MockReactPdf({ file: nanoid() });
+      expect(mockPDF.render()).toEqual(<></>);
     });
   });
 });

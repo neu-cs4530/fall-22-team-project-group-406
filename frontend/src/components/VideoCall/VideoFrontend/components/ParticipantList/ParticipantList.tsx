@@ -22,15 +22,15 @@ const useStyles = makeStyles((theme: Theme) =>
         gridArea: '2 / 1 / 3 / 3',
         overflowY: 'initial',
         overflowX: 'auto',
-        display: 'flex',
-      },
+        display: 'flex'
+      }
     },
     transparentBackground: {
-      background: 'transparent',
+      background: 'transparent'
     },
     scrollContainer: {
       display: 'flex',
-      justifyContent: 'center',
+      justifyContent: 'center'
     },
     innerScrollContainer: {
       width: `calc(${theme.sidebarWidth}px - 3em)`,
@@ -38,16 +38,16 @@ const useStyles = makeStyles((theme: Theme) =>
       [theme.breakpoints.down('sm')]: {
         width: 'auto',
         padding: `${theme.sidebarMobilePadding}px`,
-        display: 'flex',
-      },
+        display: 'flex'
+      }
     },
     gridContainer: {
       gridArea: '1 / 1 / 1 / 3',
       overflowX: 'hidden',
       overflowY: 'auto',
       [theme.breakpoints.down('sm')]: {
-        gridArea: '1 / 1 / 3 / 1',
-      },
+        gridArea: '1 / 1 / 3 / 1'
+      }
     },
     gridInnerContainer: {
       display: 'flex',
@@ -64,14 +64,14 @@ const useStyles = makeStyles((theme: Theme) =>
       // },
       width: '100%',
       justifyContent: 'center',
-      alignContent: 'center',
+      alignContent: 'center'
     },
     wrapper: {
       display: 'flex',
       height: '100vh',
-      flexDirection: 'column',
-    },
-  }),
+      flexDirection: 'column'
+    }
+  })
 );
 
 export default function ParticipantList() {

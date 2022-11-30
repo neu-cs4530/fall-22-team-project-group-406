@@ -185,7 +185,7 @@ export default class PresentationAreaController extends (EventEmitter as new () 
       slide: this.slide,
       numSlides: this.numSlides,
       title: this.title,
-      presenterID: this.presenter ? this.presenter.id : undefined,
+      presenterID: this.presenter?.id,
     };
   }
 
